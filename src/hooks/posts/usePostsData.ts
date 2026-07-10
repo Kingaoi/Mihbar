@@ -40,6 +40,12 @@ export function usePostsData({ deviceHash, savedPosts }) {
   const [catFilter, setCatFilter] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const activeCatRef = useRef(undefined);
+  // مرجع مزامَن مع posts (بدون إعادة إنشاء refreshPosts في كل تغيير) —
+  // يُستخدم فقط كحارس أمان داخل refreshPosts، انظر التعليق هناك.
+  const postsRef = useRef(posts);
+  useEffect(() => {
+    postsRef.current = posts;
+  }, [posts]);
 
   useEffect(() => {
     // القراءة المتزامنة في تهيئة useState أعلاه غطّت بالفعل الحالة الشائعة
@@ -139,6 +145,22 @@ export function usePostsData({ deviceHash, savedPosts }) {
     try {
       const stored = await loadAllPosts();
       const cleaned = stored.filter((p) => p && p.id && !p.id.startsWith("seed-"));
+
+      // حارس أمان: لو القراءة رجعت فاضية (أو أقل بوضوح) بينما عندنا فعليًا
+      // منشورات معروضة، الأرجح إن ده فشل قراءة/كتابة عابر (localStorage
+      // quota، تزامن غير متوقّع...) مش إن كل المنشورات اتمسحت فجأة بين
+      // سحبتين. بدل ما نستبدل المعروض بنتيجة أسوأ بشكل مريب، نتجاهلها
+      // ونحافظ على الحالة الحالية — أهم بكثير من إظهار فيد فاضي بالغلط.
+      // (نفس المنطق هيصير أهم لما refreshPosts تصير طلب شبكة حقيقي عبر
+      // Supabase — طلب فاشل جزئيًا لازم ما يمسح المعروض أبدًا.)
+      const current = postsRef.current;
+      if (cleaned.length === 0 && current.length > 0) {
+        console.warn(
+          "[Mihbar] refreshPosts: القراءة رجعت فاضية رغم وجود منشورات محلية — تم تجاهل النتيجة تفاديًا لاختفاء المحتوى."
+        );
+        return;
+      }
+
       setPosts(cleaned);
     } catch (e) {
       console.error("Failed to refresh posts:", e);
