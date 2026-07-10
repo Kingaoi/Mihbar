@@ -1,7 +1,8 @@
-import Mihbar from "../../MihbarClientOnly";
-
-// نفس تصميم "Shell + Sync" الموضّح في app/post/[id]/page.jsx — useAppUIState.js
-// يقرأ usePathname() ويكتشف "/settings" تلقائيًا فيفتح SettingsPage داخليًا.
+// Mihbar لم يعد يُركَّب هنا — انظر app/layout.tsx (الـ layout الجذري
+// المشترك). هذا الملف لا يزال مطلوبًا حتى يكون /settings مسارًا صالحًا،
+// لكن العرض الفعلي يتم داخل <Mihbar/> في الـ layout، الذي يقرأ
+// usePathname() (عبر useAppUIState.js) ويكتشف "/settings" تلقائيًا فيفتح
+// SettingsPage داخليًا.
 export default function SettingsRoutePage() {
-  return <Mihbar />;
+  return null;
 }

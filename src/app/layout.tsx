@@ -1,5 +1,6 @@
 import "./globals.css";
 import ServiceWorkerRegistration from "./ServiceWorkerRegistration";
+import Mihbar from "../MihbarClientOnly";
 
 // كل الـ metadata أدناه منقولة حرفيًا من index.html الأصلي (Vite)، مُعاد
 // تنظيمها بصيغة Next.js Metadata API القياسية. هذا يُنتج نفس meta tags
@@ -54,9 +55,23 @@ export default function RootLayout({ children }) {
   // useMihbarConfig.js يواصل تحديث document.documentElement.dir/lang
   // ديناميكيًا بعد التحميل تمامًا كما كان يفعل في النسخة السابقة (Vite) —
   // لا تغيير سلوكي هنا، فقط مصدر القيمة الأولية اختلف.
+  //
+  // SPA حقيقي داخل Next.js App Router: <Mihbar/> يُركَّب هنا في الـ layout
+  // الجذري المشترك بين كل المسارات (/, /post/[id], /profile, /settings)
+  // بدل كل page.tsx على حدة. القاعدة في App Router: layout مشترك بين عدة
+  // مسارات لا يُعاد تركيبه (remount) عند التنقل بينها — فقط {children}
+  // (أي page.tsx الفردي) يتغيّر. بما أن كل صفحاتنا الأربعة تتفرّع مباشرة من
+  // هذا الـ layout، فـ <Mihbar/> يبقى instance واحدًا ثابتًا طوال عمر
+  // الجلسة، وكل حالته الداخلية (posts, deviceHash, ownedPosts...) تبقى
+  // محمَّلة دون إعادة تحميل. {children} (محتوى page.tsx) لم يعد له أي دور
+  // فعلي في العرض — Mihbar نفسه يقرأ usePathname() داخليًا (عبر
+  // useThreadNavigation.js/useAppUIState.js) ليقرر ماذا يعرض، تمامًا كما
+  // كان يفعل عبر useLocation() من react-router-dom في النسخة السابقة
+  // (Vite + BrowserRouter) التي أُخذ منها هذا التصميم أصلاً.
   return (
     <html lang="ar" dir="rtl" translate="no" className="notranslate" suppressHydrationWarning>
       <body>
+        <Mihbar />
         {children}
         <ServiceWorkerRegistration />
       </body>
