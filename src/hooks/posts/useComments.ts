@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { canPerformAction, isSpamQuality, emptyVotes } from "../../utils/index";
+import { canPerformAction, isSpamQuality, emptyVotes, generateUniqueId } from "../../utils/index";
 import { getCommentDraft, saveCommentDraft, clearCommentDraft } from "../../utils/dataLayer";
 
 export function useComments({
@@ -8,6 +8,7 @@ export function useComments({
   isMobile,
   isBanned,
   deviceHash,
+  securityReady,
   ownedComments,
   saveOwnedComments,
   savePosts,
@@ -50,8 +51,9 @@ export function useComments({
       setErr(s.banned);
       return;
     }
-    // نفس الفحص الدفاعي الموجود في usePostForm.js submit — انظر التعليق هناك.
-    if (!deviceHash) {
+    // securityReady: false يعني تحميل بصمة الجهاز/حالة الحظر لم يكتمل بعد.
+    // انظر التعليق المطابق في usePostForm.ts submit.
+    if (!securityReady || !deviceHash) {
       return;
     }
     if (isSpamQuality(commentText)) {
@@ -69,7 +71,7 @@ export function useComments({
     }
     setIsCommenting(true);
     const c = {
-      id: `comment-${Date.now()}`,
+      id: generateUniqueId("comment"),
       text: (commentText || "").trim(),
       votes: emptyVotes(),
       timestamp: Date.now(),

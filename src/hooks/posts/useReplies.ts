@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
-import { canPerformAction, isSpamQuality, emptyVotes } from "../../utils/index";
+import { canPerformAction, isSpamQuality, emptyVotes, generateUniqueId } from "../../utils/index";
 
 export function useReplies({
   s,
   isMobile,
   isBanned,
   deviceHash,
+  securityReady,
   ownedReplies,
   saveOwnedReplies,
   savePosts,
@@ -27,8 +28,9 @@ export function useReplies({
       setErr(s.banned);
       return;
     }
-    // نفس الفحص الدفاعي الموجود في usePostForm.js submit — انظر التعليق هناك.
-    if (!deviceHash) {
+    // securityReady: false يعني تحميل بصمة الجهاز/حالة الحظر لم يكتمل بعد.
+    // انظر التعليق المطابق في usePostForm.ts submit.
+    if (!securityReady || !deviceHash) {
       return;
     }
     if (isSpamQuality(replyText)) {
@@ -46,7 +48,7 @@ export function useReplies({
     }
     setIsReplying2(true);
     const r = {
-      id: `reply-${Date.now()}`,
+      id: generateUniqueId("reply"),
       text: (replyText || "").trim(),
       votes: emptyVotes(),
       timestamp: Date.now(),

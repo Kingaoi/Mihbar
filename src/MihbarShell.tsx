@@ -65,7 +65,7 @@ export default function Mihbar() {
 
   const security = useMihbarSecurity();
   const {
-    deviceHash, isBanned, banTimeLeft, ownedPosts, saveOwnedPosts, ownedComments, saveOwnedComments, ownedReplies, saveOwnedReplies,
+    deviceHash, securityReady, isBanned, banTimeLeft, ownedPosts, saveOwnedPosts, ownedComments, saveOwnedComments, ownedReplies, saveOwnedReplies,
   } = security;
 
   // UI State Management Hook
@@ -79,7 +79,7 @@ export default function Mihbar() {
 
   // Posts State and Navigation Hook
   const postsManager = useMihbarPosts({
-    s, lang, isMobile, isBanned, deviceHash, ownedPosts, saveOwnedPosts, ownedComments, saveOwnedComments, ownedReplies, saveOwnedReplies,
+    s, lang, isMobile, isBanned, deviceHash, securityReady, ownedPosts, saveOwnedPosts, ownedComments, saveOwnedComments, ownedReplies, saveOwnedReplies,
     showToast, askConfirm, savedPosts, askDangerConfirm, setSettingsOpen, setSettingsPageOpen, setProfilePageOpen,
   });
 

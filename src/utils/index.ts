@@ -35,6 +35,15 @@ export const sumVotes = (v, poll = null) => {
   return total;
 };
 
+// توليد معرّف فريد لعنصر جديد (منشور/تعليق/رد). Date.now() وحده غير كافٍ:
+// نقرة مزدوجة سريعة أو إنشاء عنصرين ضمن نفس المللي ثانية يعطيان نفس القيمة
+// ويسبب تصادم معرّفات (نفس المفتاح في map/object يستبدل العنصر السابق).
+// إضافة جزء عشوائي قصير يحل المشكلة عمليًا دون حاجة لمكتبة uuid كاملة.
+export const generateUniqueId = (prefix: string) => {
+  const rand = Math.random().toString(36).substring(2, 8);
+  return `${prefix}-${Date.now()}-${rand}`;
+};
+
 export const generateDeviceHash = () => {
   try {
     const raw = [

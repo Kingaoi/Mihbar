@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { canPerformAction, isSpamQuality, emptyVotes } from "../../utils/index";
+import { canPerformAction, isSpamQuality, emptyVotes, generateUniqueId } from "../../utils/index";
 import { getPostDraft, savePostDraft, clearPostDraft } from "../../utils/dataLayer";
 
 export function usePostForm({
@@ -7,6 +7,7 @@ export function usePostForm({
   isMobile,
   isBanned,
   deviceHash,
+  securityReady,
   ownedPosts,
   saveOwnedPosts,
   savePosts,
@@ -88,11 +89,11 @@ export function usePostForm({
       setErr(s.banned);
       return;
     }
-    // deviceHash لا يزال null خلال نافذة التحميل الأولي القصيرة جدًا
-    // (useMihbarSecurity.js لم يُكمل بعد تحميل/توليد بصمة الجهاز). لا نمرر
-    // بصمة فارغة لمنشور جديد — هذا فحص دفاعي، عمليًا نادر التفعيل لأن
-    // التحميل الأولي أسرع بكثير من أي تفاعل يدوي ممكن.
-    if (!deviceHash) {
+    // securityReady: false يعني تحميل بصمة الجهاز/حالة الحظر من التخزين
+    // لم يكتمل بعد (نافذة قصيرة عند أول تحميل). نمنع النشر بهدوء ريثما
+    // يكتمل، بدل الاعتماد فقط على فحص deviceHash المنفرد الذي كان يفوّت
+    // حالات نادرة (مثال: isBanned لم يُحمَّل بعد فيُسمح بمنشور من جهاز محظور).
+    if (!securityReady || !deviceHash) {
       return;
     }
     if (!(text || "").trim() || text.length < 5) {
@@ -116,7 +117,7 @@ export function usePostForm({
     setIsPosting(true);
 
     const newPost = {
-      id: `post-${Date.now()}`,
+      id: generateUniqueId("post"),
       category,
       text: (text || "").trim(),
       votes: emptyVotes(),

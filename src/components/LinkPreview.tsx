@@ -1,59 +1,103 @@
 import { useState, useEffect } from "react";
 import { RADIUS, FONT } from "../constants/index";
 
-export function LinkPreview({ url, CL, BORDERS }) {
-  const [data, setData] = useState(null);
+interface LinkPreviewData {
+  title: string;
+  description: string;
+  image: string;
+  url: string;
+  publisher: string;
+}
+
+interface LinkPreviewProps {
+  url: string | null | undefined;
+  CL: any;
+  BORDERS: any;
+}
+
+// كاش وعود على مستوى الموديول (يعيش خارج أي instance من المكوّن). يحل
+// مشكلة الطلبات المتزامنة المكررة: لو نفس الرابط ظهر في عدة تعليقات/ردود
+// على نفس المنشور ورُسمت كلها معًا، كانت كل نسخة LinkPreview تطلق fetch
+// مستقلاً حتى لو كانت النتيجة الأولى ستُخزَّن بعد قليل في sessionStorage —
+// لأن الكتابة للكاش تحصل فقط بعد اكتمال أول طلب، فكل الطلبات المتزامنة
+// اللي بدأت *قبل* ذلك الاكتمال تفوتها. الحل: نتشارك نفس الـ Promise بين كل
+// الاستدعاءات المتزامنة لنفس الرابط، فيصير هناك fetch واحد فقط بغض النظر
+// عن عدد المكوّنات التي تطلبه في نفس اللحظة.
+const inFlightRequests = new Map<string, Promise<LinkPreviewData | null>>();
+
+async function fetchLinkPreview(url: string): Promise<LinkPreviewData | null> {
+  const cacheKey = `link_preview_${url}`;
+  const cached = window.sessionStorage.getItem(cacheKey);
+  if (cached) {
+    try {
+      return JSON.parse(cached) as LinkPreviewData;
+    } catch {
+      // كاش تالف، نكمل لجلب البيانات من جديد
+    }
+  }
+
+  const existing = inFlightRequests.get(url);
+  if (existing) return existing;
+
+  const request = (async () => {
+    try {
+      const res = await window.fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`);
+      const json = await res.json();
+      if (json.status === "success" && json.data) {
+        const result: LinkPreviewData = {
+          title: json.data.title || "",
+          description: json.data.description || "",
+          image: json.data.image?.url || "",
+          url: json.data.url || url,
+          publisher: json.data.publisher || "",
+        };
+        window.sessionStorage.setItem(cacheKey, JSON.stringify(result));
+        return result;
+      }
+      return null;
+    } catch {
+      return null;
+    } finally {
+      inFlightRequests.delete(url);
+    }
+  })();
+
+  inFlightRequests.set(url, request);
+  return request;
+}
+
+export function LinkPreview({ url, CL, BORDERS }: LinkPreviewProps) {
+  const [data, setData] = useState<LinkPreviewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
+    let t0: ReturnType<typeof setTimeout> | undefined;
     if (!url) {
       const t = setTimeout(() => setLoading(false), 0);
       return () => clearTimeout(t);
     }
-    
-    // Check cache
-    const cacheKey = `link_preview_${url}`;
-    const cached = window.sessionStorage.getItem(cacheKey);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        const t = setTimeout(() => {
-          setData(parsed);
-          setLoading(false);
-        }, 0);
-        return () => clearTimeout(t);
-      } catch {}
-    }
 
-    const t0 = setTimeout(() => setLoading(true), 0);
-    window.fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`)
-      .then((res) => res.json())
-      .then((json) => {
-        if (!isMounted) return;
-        if (json.status === "success" && json.data) {
-          const result = {
-            title: json.data.title || "",
-            description: json.data.description || "",
-            image: json.data.image?.url || "",
-            url: json.data.url || url,
-            publisher: json.data.publisher || "",
-          };
-          setData(result);
-          window.sessionStorage.setItem(cacheKey, JSON.stringify(result));
-        } else {
-          setError(true);
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        if (!isMounted) return;
+    t0 = setTimeout(() => {
+      setLoading(true);
+      setError(false);
+    }, 0);
+
+    fetchLinkPreview(url).then((result) => {
+      if (!isMounted) return;
+      if (result) {
+        setData(result);
+      } else {
         setError(true);
-        setLoading(false);
-      });
-      
-    return () => { isMounted = false; clearTimeout(t0); };
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+      clearTimeout(t0);
+    };
   }, [url]);
 
   if (loading) {
