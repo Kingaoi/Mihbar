@@ -36,6 +36,7 @@ import Toast from "./components/Toast";
 import MainLayout from "./components/layout/MainLayout";
 import { FloatingPostButton } from "./components/FloatingPostButton";
 import { FloatingPostModal } from "./components/FloatingPostModal";
+import { PullToRefreshIndicator } from "./components/PullToRefreshIndicator";
 
 export default function Mihbar() {
 
@@ -84,7 +85,7 @@ export default function Mihbar() {
   // Pull-to-refresh: مفعّل فقط في سياق الفيد الرئيسي (لا صفحة فرعية/نافذة
   // مفتوحة)، بنفس شرط ظهور زر الـ FAB تقريبًا — لا معنى للسحب لتحديث الفيد
   // وأنت داخل صفحة الإعدادات أو الملف الشخصي أو منشور مفتوح لوحده.
-  usePullToRefresh({
+  const { pullY, pullProgress, maxPull } = usePullToRefresh({
     onRefresh: refreshPosts,
     isRefreshing,
     disabled: !!activePostId || settingsPageOpen || profilePageOpen || floatingPostOpen,
@@ -180,12 +181,16 @@ export default function Mihbar() {
         s={s} btn0={btn0} cardStyle={cardStyle} R={R}
       />
 
+      <PullToRefreshIndicator
+        pullY={pullY} pullProgress={pullProgress} isRefreshing={isRefreshing} maxPull={maxPull} CL={CL}
+      />
+
       <MainLayout
         isDesktop={isDesktop} setProfilePageOpen={setProfilePageOpen} myPosts={myPosts}
         myComments={myComments} myTotalReactions={myTotalReactions} catFilter={catFilter} setCatFilter={setCatFilter}
         searchQuery={searchQuery} setSearchQuery={setSearchQuery} closeThread={closeThread} activePostId={activePostId}
         CL={CL} s={s} btn0={btn0} cardStyle={cardStyle} R={R} setSettingsOpen={setSettingsOpen} BORDERS={BORDERS}
-        isBanned={isBanned} banTimeLeft={banTimeLeft}
+        isBanned={isBanned} banTimeLeft={banTimeLeft} pullY={pullY}
       >
         {activePostId ? (
           <ThreadView
