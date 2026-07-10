@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="coreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E89B7D" />
+      <stop offset="100%" stop-color="#D97757" />
+    </linearGradient>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A89B8C" />
+      <stop offset="100%" stop-color="#4A3F35" />
+    </linearGradient>
+  </defs>
+  
+  <circle cx="100" cy="100" r="78" fill="none" stroke="url(#ringGrad)" stroke-width="20" stroke-linecap="round" stroke-dasharray="112 51" transform="rotate(-90 100 100)" />
+  
+  <circle cx="100" cy="100" r="52" fill="url(#coreGrad)" />
+</svg>

@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    /* ملاحظة (ترحيل تدريجي JS → TS): strict معطَّلة عمدًا في هذه المرحلة.
+       الهدف الأول هو ترحيل آمن (compile ناجح، السلوك الوظيفي دون تغيير)
+       عبر مشروع بحجم 76 ملفًا بمنطق أعمال معقّد (localStorage layer،
+       markdown renderer، إلخ). تفعيل strict من اليوم الأول كان سيفرض حل
+       مئات أخطاء type-checking فورًا، مع خطر تغيير سلوك تحت ضغط "إسكات
+       الـ compiler". التشديد التدريجي (strict: true، ثم noImplicitAny،
+       إلخ) خطوة تالية منفصلة مقترحة بعد استقرار البناء الكامل. */
+    "strict": false,
+    "noImplicitAny": false,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

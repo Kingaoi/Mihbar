@@ -1,0 +1,35 @@
+{
+  "name": "محبار",
+  "short_name": "محبار",
+  "description": "محبار — مساحة لمشاركة الآراء والتجارب والأفكار.",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
+  "background_color": "#141312",
+  "theme_color": "#141312",
+  "orientation": "portrait",
+  "categories": ["social", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512 1024x1024",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512 1024x1024",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "الرئيسية",
+      "short_name": "الرئيسية",
+      "url": "/?source=shortcut",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+    }
+  ]
+}
