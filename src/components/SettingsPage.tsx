@@ -8,6 +8,7 @@ import LanguageSection from "./settings/LanguageSection";
 import ThemeSection from "./settings/ThemeSection";
 import LegalSection from "./settings/LegalSection";
 import DangerZoneSection from "./settings/DangerZoneSection";
+import AccountSection from "./settings/AccountSection";
 
 export function SettingsPage({
   settingsPageOpen,
@@ -26,6 +27,7 @@ export function SettingsPage({
   btn0,
   deferredPrompt,
   onInstallPWA,
+  setAuthPageOpen,
 }) {
   if (!settingsPageOpen) return null;
 
@@ -84,6 +86,16 @@ export function SettingsPage({
             {s.settings}
           </div>
         </div>
+
+        {/* الحساب */}
+        <AccountSection
+          CL={CL}
+          BORDERS={BORDERS}
+          isMobile={isMobile}
+          s={s}
+          btn0={btn0}
+          setAuthPageOpen={setAuthPageOpen}
+        />
 
         {/* اللغة */}
         <LanguageSection

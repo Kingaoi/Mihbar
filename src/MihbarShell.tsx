@@ -37,6 +37,8 @@ import MainLayout from "./components/layout/MainLayout";
 import { FloatingPostButton } from "./components/FloatingPostButton";
 import { FloatingPostModal } from "./components/FloatingPostModal";
 import { PullToRefreshIndicator } from "./components/PullToRefreshIndicator";
+import AuthGatewayPage from "./components/AuthGatewayPage";
+import UsernameAuthPage from "./components/UsernameAuthPage";
 
 export default function Mihbar() {
 
@@ -58,7 +60,7 @@ export default function Mihbar() {
   const {
     toast, showToast, confirmState, askConfirm, closeConfirm, dangerState, dangerCountdown, askDangerConfirm, closeDangerConfirm,
     settingsOpen, setSettingsOpen, settingsPageOpen, setSettingsPageOpen, profilePageOpen, setProfilePageOpen, profileTab, setProfileTab,
-    openMenuFor, setOpenMenuFor, floatingPostOpen, setFloatingPostOpen,
+    openMenuFor, setOpenMenuFor, floatingPostOpen, setFloatingPostOpen, authPageOpen, setAuthPageOpen, authView, setAuthView,
   } = uiState;
 
   // Posts State and Navigation Hook
@@ -80,7 +82,7 @@ export default function Mihbar() {
     copyItemText, shareItemText, myPosts, myComments, myTotalReactions, toggleReplies, startReply,
   } = postsManager;
 
-  const shouldShowFloatingBtn = !activePostId && !settingsPageOpen && !profilePageOpen && !floatingPostOpen;
+  const shouldShowFloatingBtn = !activePostId && !settingsPageOpen && !profilePageOpen && !floatingPostOpen && !authPageOpen;
 
   // Pull-to-refresh: مفعّل بسياقين — الفيد الرئيسي (يسحب قسم المنشورات) وصفحة
   // المنشور المفتوح (يسحب قسم التعليقات تحديدًا). refreshPosts نفسها تكفي
@@ -90,7 +92,7 @@ export default function Mihbar() {
   const { pullY, pullProgress, maxPull } = usePullToRefresh({
     onRefresh: refreshPosts,
     isRefreshing,
-    disabled: settingsPageOpen || profilePageOpen || floatingPostOpen,
+    disabled: settingsPageOpen || profilePageOpen || floatingPostOpen || authPageOpen,
   });
 
   // Shared Styles retrieval
@@ -174,6 +176,7 @@ export default function Mihbar() {
         themePref={themePref} setThemePref={setThemePref} confirmPurgeContent={confirmPurgeContent}
         confirmPurgeOwnershipOnly={confirmPurgeOwnershipOnly} CL={CL} BORDERS={BORDERS} isMobile={isMobile}
         isDesktop={isDesktop} s={s} btn0={btn0} deferredPrompt={deferredPrompt} onInstallPWA={handleInstallPWA}
+        setAuthPageOpen={setAuthPageOpen}
       />
 
       <ProfilePage
@@ -181,6 +184,17 @@ export default function Mihbar() {
         myTotalReactions={myTotalReactions} profileTab={profileTab} setProfileTab={setProfileTab}
         openThreadFromProfile={openThreadFromProfile} CL={CL} BORDERS={BORDERS} isMobile={isMobile} isDesktop={isDesktop}
         s={s} btn0={btn0} cardStyle={cardStyle} R={R}
+      />
+
+      <AuthGatewayPage
+        authPageOpen={authPageOpen} setAuthPageOpen={setAuthPageOpen} setAuthView={setAuthView}
+        CL={CL} BORDERS={BORDERS} isMobile={isMobile} isDesktop={isDesktop} s={s} btn0={btn0}
+      />
+
+      <UsernameAuthPage
+        authPageOpen={authPageOpen} authView={authView} setAuthView={setAuthView} setAuthPageOpen={setAuthPageOpen}
+        CL={CL} BORDERS={BORDERS} isMobile={isMobile} isDesktop={isDesktop} s={s} btn0={btn0} cardStyle={cardStyle}
+        inputBase={inputBase} btnPrimary={btnPrimary}
       />
 
       <PullToRefreshIndicator
