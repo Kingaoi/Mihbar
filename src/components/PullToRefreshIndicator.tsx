@@ -8,11 +8,13 @@ import { IconSproutLoader } from "./Icons";
 // سواء بسواء — بدل تبديلها بسهم منفصل.
 export function PullToRefreshIndicator({
   pullY,
+  isRefreshing,
   maxPull = 64,
   CL,
 }: {
   pullY: MotionValue<number>;
   pullProgress?: MotionValue<number>;
+  isRefreshing: boolean;
   maxPull?: number;
   CL: any;
 }) {

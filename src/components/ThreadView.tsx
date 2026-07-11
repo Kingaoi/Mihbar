@@ -78,7 +78,6 @@ export default function ThreadView({
   inputBase,
   R,
   pullY,
-  pullAnchorRef,
 }) {
   if (!activePost) return null;
 
@@ -377,11 +376,7 @@ export default function ThreadView({
 
         {/* Comments list — قسم التعليقات: هو الجزء اللي ينسحب فعليًا لتحت مع
             pullY أثناء pull-to-refresh داخل صفحة المنشور المفتوح (المنشور
-            نفسه وصندوق كتابة تعليق جديد يفضلوا ثابتين). المرساة أسفله ثابتة
-            (خارج التحويل) عشان تفعّل السحب لما توصل بداية التعليقات فعليًا،
-            حتى لو المنشور نفسه لسة يقدر يتمرّر لفوق أكثر (بدل ما يشترط
-            الوصول لقمة الصفحة المطلقة اللي ممكن تكون بعيدة عن التعليقات). */}
-        <div ref={pullAnchorRef} style={{ height: 0 }} aria-hidden />
+            نفسه وصندوق كتابة تعليق جديد يفضلوا ثابتين). */}
         <motion.div style={{ y: pullY }}>
           {(activePost?.comments || []).length === 0 ? (
             <div style={{ textAlign: "center", padding: "48px 20px", color: CL.textMuted }}>
