@@ -46,7 +46,6 @@ export const en = {
   authContinueGoogle:"Continue with Google",
   authOr:"or",
   authContinueUsername:"Create account with username",
-  authGuestContinue:"Skip, continue without an account",
   authFooterNote:"Your identity stays as anonymous as possible — the account is only used to save your content 🔒",
   authPageTitle:"Account",
   authTabLogin:"Log in",

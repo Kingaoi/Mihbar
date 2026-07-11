@@ -153,26 +153,6 @@ export default function AuthGatewayPage({
               {s.authContinueUsername}
             </button>
           </div>
-
-          {/* متابعة بدون حساب — يحافظ على روح "مِحبار" المجهولة */}
-          <button
-            className="pressable"
-            onClick={() => setAuthPageOpen(false)}
-            style={{
-              ...btn0,
-              background: "transparent",
-              border: "none",
-              padding: "14px 8px",
-              color: CL.textSub,
-              fontSize: FONT.body,
-              fontWeight: 700,
-              textAlign: "center",
-              width: "100%",
-              marginTop: 4,
-            }}
-          >
-            {s.authGuestContinue}
-          </button>
         </div>
 
         {/* ملاحظة الخصوصية */}

@@ -44,7 +44,6 @@ export const ar = {
   authContinueGoogle:"المتابعة عبر جوجل",
   authOr:"أو",
   authContinueUsername:"إنشاء حساب باسم مستخدم",
-  authGuestContinue:"تجاهل، تابع بدون حساب",
   authFooterNote:"هويتك تبقى مجهولة قدر الإمكان — الحساب يُستخدم فقط لحفظ محتواك 🔒",
   authPageTitle:"الحساب",
   authTabLogin:"تسجيل الدخول",
