@@ -29,7 +29,6 @@ export default function UsernameAuthPage({
   authPageOpen,
   authView,
   setAuthView,
-  setAuthPageOpen,
   CL,
   BORDERS,
   isMobile,
