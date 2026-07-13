@@ -118,27 +118,32 @@ export function usePullToRefresh({
 
       const rawDelta = e.touches[0].clientY - touchStartY.current;
 
-      if (decidedRef.current === null) {
-        // لسة داخل منطقة السماحية — ننتظر حركة أوضح قبل ما نحسم أي شيء
-        // (وبالتحديد: لا نستدعي preventDefault هنا إطلاقًا).
-        if (Math.abs(rawDelta) < DIRECTION_DEAD_ZONE) return;
+      // أي حركة لأعلى تُحسم فورًا كسكرول عادي، بلا تريث عبر DIRECTION_DEAD_ZONE:
+      // عكس "سحب لأسفل" (يحتاج تأكيد قبل ما نصادر اللمسة)، اتجاه لأعلى ما
+      // له تفسير غير "المستخدم يسكرول"، وتأخير القرار عليها كان يخلي أول
+      // touchmove يمر بلا معالجة — ومتصفحات الموبايل غالبًا تقفل قرار
+      // "قابلية التمرير" لبقية اللمسة من نفس أول touchmove (خصوصًا مع
+      // مستمع passive:false على window)، فيتعطل السكرول الطبيعي بالكامل.
+      if (rawDelta <= 0) {
+        decidedRef.current = "scroll";
+        pullY.set(0);
+        pullProgress.set(0);
+        armedRef.current = false;
+        return;
+      }
 
-        if (rawDelta < 0 || !isAtPullTop()) {
-          // تبيّن إنها سكرول عادي لأسفل الصفحة (أو خرجنا من منطقة القمة
-          // أثناء التردد) — نتخلى نهائيًا ونسيب المتصفح يتعامل معها بحرية.
+      if (decidedRef.current === null) {
+        // لسة داخل منطقة السماحية لاتجاه "لأسفل" فقط — ننتظر حركة أوضح
+        // قبل ما نحسم (وبالتحديد: لا نستدعي preventDefault هنا إطلاقًا).
+        if (rawDelta < DIRECTION_DEAD_ZONE) return;
+
+        if (!isAtPullTop()) {
           decidedRef.current = "scroll";
           pullY.set(0);
           pullProgress.set(0);
           return;
         }
         decidedRef.current = "pull";
-      }
-
-      if (rawDelta <= 0) {
-        pullY.set(0);
-        pullProgress.set(0);
-        armedRef.current = false;
-        return;
       }
 
       // نمنع السلوك الافتراضي للمتصفح (rubber-band / إعادة تحميل الصفحة
