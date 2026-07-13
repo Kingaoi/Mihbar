@@ -3,6 +3,7 @@ import { isSpamQuality } from "../../utils/index";
 
 export function usePostEditing({
   s,
+  posts,
   savePosts,
   showToast,
   ownedPosts,
@@ -44,14 +45,37 @@ export function usePostEditing({
 
   const deletePost = useCallback((postId) => {
     askConfirm(s.confirmDelete, () => {
+      // إصلاح تسريب بيانات: كان الحذف يزيل المنشور من ownedPosts فقط،
+      // تاركًا معرّفات كل تعليقاته وردوده كـ"يتيمة" (orphan) في
+      // ownedComments/ownedReplies إلى الأبد — لا شيء ينظّفها لاحقًا، فتتراكم
+      // في localStorage بلا حد مع الوقت. نحسب هنا كل معرّفات التعليقات
+      // والردود التابعة للمنشور *قبل* حذفه من posts (savePosts تُحدّث
+      // الحالة لاحقًا بشكل غير متزامن)، وننظّف الخرائط الثلاث معًا.
+      const post = posts.find((p) => p.id === postId);
+      const commentIds = (post?.comments || []).map((c) => c.id);
+      const replyIds = (post?.comments || []).flatMap((c) => (c.replies || []).map((r) => r.id));
+
       savePosts((prev) => prev.filter((p) => p.id !== postId));
+
       const o = { ...ownedPosts };
       delete o[postId];
       saveOwnedPosts(o);
+
+      if (commentIds.length > 0) {
+        const oc = { ...ownedComments };
+        commentIds.forEach((cid) => delete oc[cid]);
+        saveOwnedComments(oc);
+      }
+      if (replyIds.length > 0) {
+        const or_ = { ...ownedReplies };
+        replyIds.forEach((rid) => delete or_[rid]);
+        saveOwnedReplies(or_);
+      }
+
       setActivePostId(null);
       showToast(s.toastDeleted);
     });
-  }, [s.confirmDelete, s.toastDeleted, savePosts, ownedPosts, showToast, askConfirm, saveOwnedPosts, setActivePostId]);
+  }, [s.confirmDelete, s.toastDeleted, posts, savePosts, ownedPosts, ownedComments, ownedReplies, showToast, askConfirm, saveOwnedPosts, saveOwnedComments, saveOwnedReplies, setActivePostId]);
 
   const saveEditPost = useCallback((postId) => {
     if (!(editPostText || "").trim() || editPostText.length < 5) {

@@ -8,6 +8,8 @@ import ActionMenuButton from "./ActionMenuButton";
 import ReactionRow from "./ReactionRow";
 import { MdBadge } from "./MdBadge";
 import { PollRenderer } from "./PollRenderer";
+import { LinkPreview } from "./LinkPreview";
+import { TextWithLinks, extractFirstUrl } from "./TextWithLinks";
 import { MdAttachRow } from "./MdAttachRow";
 import { VideoPlayer } from "./VideoPlayer";
 import CommentItem from "./CommentItem";
@@ -78,6 +80,7 @@ export default function ThreadView({
   inputBase,
   R,
   pullY,
+  pullAnchorRef,
 }) {
   if (!activePost) return null;
 
@@ -179,6 +182,7 @@ export default function ThreadView({
                 onChange={(e) => setEditPostText(e.target.value)}
                 maxLength={300}
                 autoFocus
+                dir="auto"
                 style={{
                   ...inputBase,
                   width: "100%",
@@ -204,9 +208,8 @@ export default function ThreadView({
             </div>
           ) : (
             <>
-              <p style={{ margin: "0 0 10px", fontSize: R.bodyText, lineHeight: 1.78, color: CL.text, wordBreak: "break-word" }}>
-                {activePost.text}
-              </p>
+              <TextWithLinks text={activePost.text} CL={CL} style={{ margin: "0 0 10px", fontSize: R.bodyText, lineHeight: 1.78, color: CL.text, wordBreak: "break-word" }} />
+              <LinkPreview url={extractFirstUrl(activePost.text)} CL={CL} BORDERS={BORDERS} />
               <PollRenderer poll={activePost.poll} postId={activePost.id} CL={CL} BORDERS={BORDERS} s={s} handlePollVote={handlePollVote} deviceHash={deviceHash} />
               {activePost.mdFile && (
                 <MdBadge
@@ -292,6 +295,7 @@ export default function ThreadView({
                 placeholder={s.commentPh}
                 maxLength={300}
                 rows={1}
+                dir="auto"
                 style={{
                   ...inputBase,
                   flex: 1,
@@ -376,7 +380,11 @@ export default function ThreadView({
 
         {/* Comments list — قسم التعليقات: هو الجزء اللي ينسحب فعليًا لتحت مع
             pullY أثناء pull-to-refresh داخل صفحة المنشور المفتوح (المنشور
-            نفسه وصندوق كتابة تعليق جديد يفضلوا ثابتين). */}
+            نفسه وصندوق كتابة تعليق جديد يفضلوا ثابتين). المرساة أسفله ثابتة
+            (خارج التحويل) عشان تفعّل السحب لما توصل بداية التعليقات فعليًا،
+            حتى لو المنشور نفسه لسة يقدر يتمرّر لفوق أكثر (بدل ما يشترط
+            الوصول لقمة الصفحة المطلقة اللي ممكن تكون بعيدة عن التعليقات). */}
+        <div ref={pullAnchorRef} style={{ height: 0 }} aria-hidden />
         <motion.div style={{ y: pullY }}>
           {(activePost?.comments || []).length === 0 ? (
             <div style={{ textAlign: "center", padding: "48px 20px", color: CL.textMuted }}>

@@ -11,7 +11,7 @@ import {
 import { SEEDS } from "../../data/seeds";
 import { FLAG_HIDE_LIMIT, FLAG_BAN_LIMIT } from "../../constants/index";
 
-export function usePostsData({ deviceHash, savedPosts }) {
+export function usePostsData({ deviceHash, securityReady, savedPosts }) {
   // localStorage متزامن بطبيعته (getPosts أعلاه لا تحتوي أي I/O حقيقي بطيء)،
   // فنقرأ القيمة الأولية مباشرة أثناء تهيئة useState بدل البدء بمصفوفة فارغة
   // ثم انتظار useEffect + async. هذا مهم بالتحديد لأن كل route هنا
@@ -182,6 +182,12 @@ export function usePostsData({ deviceHash, savedPosts }) {
   }, [flushSave]);
 
   const handlePollVote = useCallback((postId, optionId) => {
+    // securityReady/deviceHash: نفس حارس submit/addComment/addReply (انظر
+    // usePostForm.ts). بدونه، تصويت يحصل خلال نافذة التحميل القصيرة عند
+    // بدء التطبيق كان سيُخزَّن تحت مفتاح "null" الحرفي في votedBy — لا يخص
+    // أي جهاز فعلي، ويتصادم مع أي تصويت آخر يحصل في نفس النافذة على أي
+    // جهاز آخر لم يكتمل تحميله بعد أيضًا.
+    if (!securityReady || !deviceHash) return;
     savePosts((prev) =>
       prev.map((p) => {
         if (p.id !== postId) return p;
@@ -196,9 +202,13 @@ export function usePostsData({ deviceHash, savedPosts }) {
         return { ...p, poll: updatedPoll };
       })
     );
-  }, [savePosts, deviceHash]);
+  }, [savePosts, deviceHash, securityReady]);
 
   const updateVotes = useCallback((postId, commentId, reactionKey, replyId = null) => {
+    // نفس حارس handlePollVote أعلاه — applyVoteToggle تستخدم deviceHash
+    // كمفتاح في helpfulBy/agreeBy/إلخ، فنفس مخاطر التصادم تحت "null" تنطبق
+    // هنا بالضبط لو سُمح بالتفاعل قبل اكتمال تحميل بصمة الجهاز.
+    if (!securityReady || !deviceHash) return;
     savePosts((prev) =>
       prev.map((p) => {
         if (p.id !== postId) return p;
@@ -255,7 +265,7 @@ export function usePostsData({ deviceHash, savedPosts }) {
         return updated;
       })
     );
-  }, [savePosts, deviceHash]);
+  }, [savePosts, deviceHash, securityReady]);
 
   return {
     handlePollVote,

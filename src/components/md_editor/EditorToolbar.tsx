@@ -13,25 +13,25 @@ export default function EditorToolbar({
   setContent,
 }) {
   const tools = [
-    { icon: "𝐁", label: s.mdToolBold, action: () => wrapSelection("**", "**", "نص عريض") },
-    { icon: "<i>I</i>", label: s.mdToolItalic, action: () => wrapSelection("*", "*", "نص مائل") },
-    { icon: "S̶", label: s.mdToolStrike, action: () => wrapSelection("~~", "~~", "نص") },
+    { icon: "𝐁", label: s.mdToolBold, action: () => wrapSelection("**", "**", s.mdPhBold) },
+    { icon: "<i>I</i>", label: s.mdToolItalic, action: () => wrapSelection("*", "*", s.mdPhItalic) },
+    { icon: "S̶", label: s.mdToolStrike, action: () => wrapSelection("~~", "~~", s.mdPhStrike) },
     { icon: "H1", label: s.mdToolH1, action: () => prefixLines("# ") },
     { icon: "H2", label: s.mdToolH2, action: () => prefixLines("## ") },
     { icon: <IconQuote size={13} color={CL.text} />, label: s.mdToolQuote, action: () => prefixLines("> ") },
     { icon: "•", label: s.mdToolUl, action: () => prefixLines("- ") },
     { icon: "1.", label: s.mdToolOl, action: () => prefixLines("1. ") },
-    { icon: "</>", label: s.mdToolCode, action: () => wrapSelection("`", "`", "code") },
+    { icon: "</>", label: s.mdToolCode, action: () => wrapSelection("`", "`", s.mdPhCode) },
     { icon: "{ }", label: s.mdToolCodeBlock, action: () => wrapSelection("```\n", "\n```", "") },
     {
       icon: <IconLink size={13} color={CL.text} />,
       label: s.mdToolLink,
-      action: () => wrapSelection("[", "](https://)", "نص الرابط"),
+      action: () => wrapSelection("[", "](https://)", s.mdPhLinkText),
     },
     {
       icon: <IconImage size={13} color={CL.text} />,
       label: s.mdToolImage,
-      action: () => wrapSelection("![", "](https://)", "وصف الصورة"),
+      action: () => wrapSelection("![", "](https://)", s.mdPhImageAlt),
     },
     {
       icon: "—",

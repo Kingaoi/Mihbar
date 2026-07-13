@@ -173,6 +173,7 @@ export default function FeedPostItem({
               onChange={(e) => setEditPostText(e.target.value)}
               maxLength={300}
               autoFocus
+              dir="auto"
               style={{
                 ...inputBase,
                 width: "100%",

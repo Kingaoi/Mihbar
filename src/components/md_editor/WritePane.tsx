@@ -30,6 +30,7 @@ export default function WritePane({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder={s.mdEditorPlaceholder}
+        dir="auto"
         style={{
           flex: 1,
           width: "100%",

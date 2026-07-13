@@ -9,8 +9,11 @@ export function useComments({
   isBanned,
   deviceHash,
   securityReady,
+  posts,
   ownedComments,
   saveOwnedComments,
+  ownedReplies,
+  saveOwnedReplies,
   savePosts,
   showToast,
   setErr,
@@ -99,11 +102,31 @@ export function useComments({
 
   const deleteComment = (postId, commentId) => {
     askConfirm(s.confirmDeleteComment, () => {
+      // إصلاح تسريب بيانات: كانت الملكية (ownedComments للتعليق نفسه،
+      // وownedReplies لكل ردوده) لا تُنظَّف إطلاقًا عند الحذف — تبقى
+      // معرّفات يتيمة في localStorage للأبد. نحسب هنا ردود التعليق *قبل*
+      // حذفه من posts، وننظّف الخريطتين معًا.
+      const post = posts.find((p) => p.id === postId);
+      const comment = post?.comments?.find((c) => c.id === commentId);
+      const replyIds = (comment?.replies || []).map((r) => r.id);
+
       savePosts((prev) =>
         prev.map((p) =>
           p.id !== postId ? p : { ...p, comments: (p.comments || []).filter((c) => c.id !== commentId) }
         )
       );
+
+      if (ownedComments[commentId]) {
+        const oc = { ...ownedComments };
+        delete oc[commentId];
+        saveOwnedComments(oc);
+      }
+      if (replyIds.length > 0) {
+        const or_ = { ...ownedReplies };
+        replyIds.forEach((rid) => delete or_[rid]);
+        saveOwnedReplies(or_);
+      }
+
       showToast(s.toastCommentDeleted);
     });
   };

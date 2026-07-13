@@ -384,6 +384,7 @@ export function MainLayout({
                     }
                   }}
                   placeholder={s.searchPh}
+                  dir="auto"
                   style={{
                     ...inputBase,
                     width: "100%",

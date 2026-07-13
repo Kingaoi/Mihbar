@@ -53,6 +53,7 @@ export default function ProfilePostItem({
         </span>
       </div>
       <p
+        dir="auto"
         style={{
           margin: "0 0 8px",
           fontSize: R.bodyText,

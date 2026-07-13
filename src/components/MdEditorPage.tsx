@@ -140,6 +140,7 @@ export default function MdEditorPage({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={s.mdFileNamePh}
+          dir="auto"
           style={{
             ...inputBase,
             width: isMobile ? 110 : 180,
