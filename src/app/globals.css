@@ -20,10 +20,6 @@ html, body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-  /* يمنع سلوك السحب-للتحديث الافتراضي للمتصفح (خصوصًا Chrome/PWA على
-     الموبايل) من إعادة تحميل الصفحة فعليًا لما تسحب لأسفل وأنت بقمة
-     الصفحة — عندنا مؤشر pull-to-refresh مخصص بديل له في usePullToRefresh. */
-  overscroll-behavior-y: contain;
 }
 * {
   -webkit-tap-highlight-color: transparent;

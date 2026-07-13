@@ -1,4 +1,3 @@
-import { motion } from "motion/react";
 import { IconPencil, IconMessageCircle, IconFileText } from "./Icons";
 import { FONT, RADIUS, CATS, ANIMATIONS, FLAG_HIDE_LIMIT } from "../constants/index";
 import { timeAgo } from "../utils/index";
@@ -77,7 +76,6 @@ export default function ThreadView({
   btnSecondary,
   inputBase,
   R,
-  pullY,
 }) {
   if (!activePost) return null;
 
@@ -374,78 +372,74 @@ export default function ThreadView({
           </div>
         )}
 
-        {/* Comments list — قسم التعليقات: هو الجزء اللي ينسحب فعليًا لتحت مع
-            pullY أثناء pull-to-refresh داخل صفحة المنشور المفتوح (المنشور
-            نفسه وصندوق كتابة تعليق جديد يفضلوا ثابتين). */}
-        <motion.div style={{ y: pullY }}>
-          {(activePost?.comments || []).length === 0 ? (
-            <div style={{ textAlign: "center", padding: "48px 20px", color: CL.textMuted }}>
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-                <IconMessageCircle size={38} color={CL.textMuted} />
-              </div>
-              <div style={{ fontSize: FONT.heading, marginBottom: 5 }}>{s.noComments}</div>
-              <div style={{ fontSize: FONT.body }}>{s.noCommentsSub}</div>
+        {/* Comments list */}
+        {(activePost?.comments || []).length === 0 ? (
+          <div style={{ textAlign: "center", padding: "48px 20px", color: CL.textMuted }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+              <IconMessageCircle size={38} color={CL.textMuted} />
             </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {(activePost?.comments || [])
-                .filter((c) => isEntityVisible(c.votes, FLAG_HIDE_LIMIT))
-                .map((c) => (
-                  <CommentItem
-                    key={c.id}
-                    c={c}
-                    activePost={activePost}
-                    deviceHash={deviceHash}
-                    ownedComments={ownedComments}
-                    ownedReplies={ownedReplies}
-                    editingCommentId={editingCommentId}
-                    setEditingCommentId={setEditingCommentId}
-                    editCommentText={editCommentText}
-                    setEditCommentText={setEditCommentText}
-                    saveEditComment={saveEditComment}
-                    editingReplyInfo={editingReplyInfo}
-                    setEditingReplyInfo={setEditingReplyInfo}
-                    editReplyText={editReplyText}
-                    setEditReplyText={setEditReplyText}
-                    saveEditReply={saveEditReply}
-                    deleteComment={deleteComment}
-                    deleteReply={deleteReply}
-                    cancelEdit={cancelEdit}
-                    replyText={replyText}
-                    setReplyText={setReplyText}
-                    addReply={addReply}
-                    isReplying2={isReplying2}
-                    replyMdFile={replyMdFile}
-                    setReplyMdFile={setReplyMdFile}
-                    replyVideoUrl={replyVideoUrl}
-                    setReplyVideoUrl={setReplyVideoUrl}
-                    replyingToId={replyingToId}
-                    expandedIds={expandedIds}
-                    toggleReplies={toggleReplies}
-                    startReply={startReply}
-                    openMenuFor={openMenuFor}
-                    setOpenMenuFor={setOpenMenuFor}
-                    copyItemText={copyItemText}
-                    shareItemText={shareItemText}
-                    updateVotes={updateVotes}
-                    openMdEditor={openMdEditor}
-                    isBanned={isBanned}
-                    err={err}
-                    setErr={setErr}
-                    CL={CL}
-                    BORDERS={BORDERS}
-                    isMobile={isMobile}
-                    s={s}
-                    btn0={btn0}
-                    btnPrimary={btnPrimary}
-                    btnSecondary={btnSecondary}
-                    inputBase={inputBase}
-                    R={R}
-                  />
-                ))}
-            </div>
-          )}
-        </motion.div>
+            <div style={{ fontSize: FONT.heading, marginBottom: 5 }}>{s.noComments}</div>
+            <div style={{ fontSize: FONT.body }}>{s.noCommentsSub}</div>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {(activePost?.comments || [])
+              .filter((c) => isEntityVisible(c.votes, FLAG_HIDE_LIMIT))
+              .map((c) => (
+                <CommentItem
+                  key={c.id}
+                  c={c}
+                  activePost={activePost}
+                  deviceHash={deviceHash}
+                  ownedComments={ownedComments}
+                  ownedReplies={ownedReplies}
+                  editingCommentId={editingCommentId}
+                  setEditingCommentId={setEditingCommentId}
+                  editCommentText={editCommentText}
+                  setEditCommentText={setEditCommentText}
+                  saveEditComment={saveEditComment}
+                  editingReplyInfo={editingReplyInfo}
+                  setEditingReplyInfo={setEditingReplyInfo}
+                  editReplyText={editReplyText}
+                  setEditReplyText={setEditReplyText}
+                  saveEditReply={saveEditReply}
+                  deleteComment={deleteComment}
+                  deleteReply={deleteReply}
+                  cancelEdit={cancelEdit}
+                  replyText={replyText}
+                  setReplyText={setReplyText}
+                  addReply={addReply}
+                  isReplying2={isReplying2}
+                  replyMdFile={replyMdFile}
+                  setReplyMdFile={setReplyMdFile}
+                  replyVideoUrl={replyVideoUrl}
+                  setReplyVideoUrl={setReplyVideoUrl}
+                  replyingToId={replyingToId}
+                  expandedIds={expandedIds}
+                  toggleReplies={toggleReplies}
+                  startReply={startReply}
+                  openMenuFor={openMenuFor}
+                  setOpenMenuFor={setOpenMenuFor}
+                  copyItemText={copyItemText}
+                  shareItemText={shareItemText}
+                  updateVotes={updateVotes}
+                  openMdEditor={openMdEditor}
+                  isBanned={isBanned}
+                  err={err}
+                  setErr={setErr}
+                  CL={CL}
+                  BORDERS={BORDERS}
+                  isMobile={isMobile}
+                  s={s}
+                  btn0={btn0}
+                  btnPrimary={btnPrimary}
+                  btnSecondary={btnSecondary}
+                  inputBase={inputBase}
+                  R={R}
+                />
+              ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -90,11 +90,6 @@ export function usePullToRefresh({
         return;
       }
 
-      // نمنع السلوك الافتراضي للمتصفح (rubber-band / إعادة تحميل الصفحة
-      // الفعلية عند السحب لأسفل بقمة الصفحة) بما إننا نمسك بزمام الأمر
-      // ونعرض مؤشرنا الخاص بدلاً منه.
-      if (e.cancelable) e.preventDefault();
-
       // مقاومة تصاعدية: كل ما زاد السحب، كل ما قلّت استجابة الحركة (rubber-band)
       const eased = MAX_VISUAL_PULL * (1 - Math.exp(-rawDelta / EASE_K));
       pullY.set(eased);
@@ -149,7 +144,7 @@ export function usePullToRefresh({
     };
 
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
     window.addEventListener("touchend", handleTouchEnd, { passive: true });
     window.addEventListener("wheel", handleWheel, { passive: true });
 
