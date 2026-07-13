@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useEffect, useState } from "react";
+import { useMemo } from "react";
 import type { CSSProperties } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "motion/react";
@@ -15,6 +15,7 @@ import { useMihbarPosts } from "./hooks/useMihbarPosts";
 import { useSavedPosts } from "./hooks/useSavedPosts";
 import { useAppUIState } from "./hooks/useAppUIState";
 import { useDocumentMetadata } from "./hooks/useDocumentMetadata";
+import { usePullToRefresh } from "./hooks/usePullToRefresh";
 
 // Styles
 import { getSharedStyles } from "./styles/sharedStyles";
@@ -28,7 +29,6 @@ import { SettingsPage } from "./components/SettingsPage";
 import { SettingsBottomSheet } from "./components/SettingsBottomSheet";
 import ProfilePage from "./components/ProfilePage";
 import ThreadView from "./components/ThreadView";
-import PostInput from "./components/PostInput";
 import FeedItem from "./components/FeedItem";
 import DevNoticeModal from "./components/DevNoticeModal";
 import PWABanner from "./components/PWABanner";
@@ -38,27 +38,10 @@ import { FloatingPostButton } from "./components/FloatingPostButton";
 import { FloatingPostModal } from "./components/FloatingPostModal";
 
 export default function Mihbar() {
-  const mainInputRef = useRef(null);
-  const [mainInputVisible, setMainInputVisible] = useState(true);
-
-  useEffect(() => {
-    const observer = new window.IntersectionObserver(
-      (entries) => {
-        if (entries[0]) {
-          setMainInputVisible(entries[0].isIntersecting);
-        }
-      },
-      { threshold: 0 }
-    );
-    if (mainInputRef.current) {
-      observer.observe(mainInputRef.current);
-    }
-    return () => observer.disconnect();
-  }, []);
 
   const config = useMihbarConfig();
   const {
-    lang, setLang, s, themePref, setThemePref, isDarkActive, CL, BORDERS, R, radiusXl, isMobile, isTablet,
+    lang, setLang, s, themePref, setThemePref, isDarkActive, CL, BORDERS, R, isMobile, isTablet,
   } = config;
 
   const isDesktop = !isMobile && !isTablet;
@@ -84,7 +67,7 @@ export default function Mihbar() {
   });
 
   const {
-    posts, loading, displayed, isPosting, isCommenting, isReplying2, text, setText, note, setNote, category, setCategory,
+    posts, loading, isRefreshing, refreshPosts, displayed, isPosting, isCommenting, isReplying2, text, setText, note, setNote, category, setCategory,
     mdFile, setMdFile, videoUrl, setVideoUrl, pollOptions, setPollOptions, commentText, setCommentText, commentMdFile, setCommentMdFile, commentVideoUrl,
     setCommentVideoUrl, replyText, setReplyText, replyMdFile, setReplyMdFile, replyVideoUrl, setReplyVideoUrl, replyingToId,
     expandedIds, mdEditorState, openMdEditor, closeMdEditor, saveMdEditor, editingPostId, setEditingPostId,
@@ -96,7 +79,16 @@ export default function Mihbar() {
     copyItemText, shareItemText, myPosts, myComments, myTotalReactions, toggleReplies, startReply,
   } = postsManager;
 
-  const shouldShowFloatingBtn = !activePostId && !settingsPageOpen && !profilePageOpen && !floatingPostOpen && !mainInputVisible;
+  const shouldShowFloatingBtn = !activePostId && !settingsPageOpen && !profilePageOpen && !floatingPostOpen;
+
+  // Pull-to-refresh: مفعّل فقط في سياق الفيد الرئيسي (لا صفحة فرعية/نافذة
+  // مفتوحة)، بنفس شرط ظهور زر الـ FAB تقريبًا — لا معنى للسحب لتحديث الفيد
+  // وأنت داخل صفحة الإعدادات أو الملف الشخصي أو منشور مفتوح لوحده.
+  usePullToRefresh({
+    onRefresh: refreshPosts,
+    isRefreshing,
+    disabled: !!activePostId || settingsPageOpen || profilePageOpen || floatingPostOpen,
+  });
 
   // Shared Styles retrieval
   // Shared Styles retrieval — memoized: الدالة نقية وتُرجع أوبجكت جديد كل
@@ -216,16 +208,6 @@ export default function Mihbar() {
           />
         ) : (
           <>
-            <div ref={mainInputRef}>
-              <PostInput
-                text={text} setText={setText} note={note} setNote={setNote} category={category} setCategory={setCategory}
-                mdFile={mdFile} setMdFile={setMdFile} videoUrl={videoUrl} setVideoUrl={setVideoUrl} pollOptions={pollOptions} setPollOptions={setPollOptions} isBanned={isBanned}
-                isPosting={isPosting} submit={submit} err={err} setErr={setErr} openMdEditor={openMdEditor} activeCatRef={activeCatRef}
-                currentPlaceholder={s.PLACEHOLDERS[0]} radiusXl={radiusXl} CL={CL} BORDERS={BORDERS} isMobile={isMobile} s={s}
-                btn0={btn0} inputBase={inputBase} R={R}
-              />
-            </div>
-
             {/* Feed Filters Tabs */}
             <div
               style={{
@@ -329,6 +311,7 @@ export default function Mihbar() {
 
       <FloatingPostButton
         isVisible={shouldShowFloatingBtn}
+        isRefreshing={isRefreshing}
         setFloatingPostOpen={setFloatingPostOpen} isMobile={isMobile} CL={CL} s={s}
       />
       <FloatingPostModal

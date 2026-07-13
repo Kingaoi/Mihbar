@@ -1,12 +1,17 @@
 import { motion, AnimatePresence } from "motion/react";
-import { IconPencil } from "./Icons";
+import { IconPencil, IconSproutLoader } from "./Icons";
 
 // ملاحظة (Motion migration): كان يستقبل floatingBtnVisible/floatingBtnClosing
 // مُدارَين يدويًا من MihbarShell.tsx عبر useEffect+setTimeout (نفس نمط
 // SettingsBottomSheet سابقًا). الآن يستقبل isVisible مباشرة فقط،
 // وAnimatePresence يتولى أنيميشن الدخول/الخروج داخليًا.
+//
+// isRefreshing: أثناء تحديث الفيد (سحب لأعلى أو بعد نشر منشور)، الزر يعرض
+// IconSproutLoader بدل IconPencil ويُعطَّل تمامًا (disabled + onClick لا
+// يُنفَّذ) — لا يمكن فتح نافذة نشر جديدة قبل استقرار البيانات المعروضة.
 export function FloatingPostButton({
   isVisible,
+  isRefreshing = false,
   setFloatingPostOpen,
   isMobile,
   CL,
@@ -18,7 +23,11 @@ export function FloatingPostButton({
         <motion.button
           key="floating-post-btn"
           className="pressable"
-          onClick={() => setFloatingPostOpen(true)}
+          onClick={() => {
+            if (isRefreshing) return;
+            setFloatingPostOpen(true);
+          }}
+          disabled={isRefreshing}
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.8, y: 20 }}
@@ -38,11 +47,17 @@ export function FloatingPostButton({
             alignItems: "center",
             justifyContent: "center",
             zIndex: 900,
-            cursor: "pointer",
+            cursor: isRefreshing ? "default" : "pointer",
+            opacity: isRefreshing ? 0.85 : 1,
           }}
-          aria-label={s.newPost || "New Post"}
+          aria-label={isRefreshing ? (s.refreshing || "جاري التحديث") : (s.newPost || "New Post")}
+          aria-busy={isRefreshing}
         >
-          <IconPencil size={24} color="#fff" />
+          {isRefreshing ? (
+            <IconSproutLoader size={26} color="#fff" />
+          ) : (
+            <IconPencil size={24} color="#fff" />
+          )}
         </motion.button>
       )}
     </AnimatePresence>
