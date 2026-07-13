@@ -45,11 +45,6 @@ export function useAppUIState() {
   // مشتقة مباشرة من pathname أثناء الـ render (بدون state/effect مكرر)
   const settingsPageOpen = pathname === "/settings";
   const profilePageOpen = pathname === "/profile";
-  const authPageOpen = pathname === "/auth";
-  // شاشة فرعية داخل صفحة الحساب نفسها (بوابة الدخول أو نموذج اسم
-  // المستخدم) — تنقّل محلي بسيط، لا يحتاج مسار URL خاص به لأنه مجرد
-  // خطوتين ضمن نفس التدفق (شكل فقط حاليًا، بلا وظائف تسجيل حقيقية).
-  const [authView, setAuthView] = useState("gateway");
   const [profileTab, setProfileTab] = useState("posts");
   const [floatingPostOpen, setFloatingPostOpen] = useState(false);
 
@@ -66,15 +61,6 @@ export function useAppUIState() {
     if (isOpen) {
       router.push("/profile");
     } else if (pathname === "/profile") {
-      router.push("/");
-    }
-  }, [router, pathname]);
-
-  const updateAuthPageOpen = useCallback((isOpen) => {
-    if (isOpen) {
-      setAuthView("gateway"); // نبدأ دايمًا من بوابة الاختيار عند فتح الصفحة
-      router.push("/auth");
-    } else if (pathname === "/auth") {
       router.push("/");
     }
   }, [router, pathname]);
@@ -109,10 +95,6 @@ export function useAppUIState() {
     setSettingsPageOpen: updateSettingsPageOpen,
     profilePageOpen,
     setProfilePageOpen: updateProfilePageOpen,
-    authPageOpen,
-    setAuthPageOpen: updateAuthPageOpen,
-    authView,
-    setAuthView,
     profileTab,
     setProfileTab,
     floatingPostOpen,
