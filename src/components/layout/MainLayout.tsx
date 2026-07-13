@@ -26,7 +26,6 @@ export function MainLayout({
   BORDERS,
   isBanned,
   banTimeLeft,
-  pullY,
   children,
 }) {
   const [searchBarVisible, setSearchBarVisible] = useState(!!searchQuery);
@@ -385,6 +384,7 @@ export function MainLayout({
                     }
                   }}
                   placeholder={s.searchPh}
+                  dir="auto"
                   style={{
                     ...inputBase,
                     width: "100%",
@@ -446,15 +446,7 @@ export function MainLayout({
           </div>
         )}
 
-        {/* ملاحظة: التغليف بـ motion.div هنا (وليس على مستوى الصفحة كلها) مقصود —
-            تطبيق transform على أي عنصر أب يجعله containing block لعناصره
-            الـ position:fixed، وده كان راح يكسر الـ overlay الثابت الخاص
-            بقائمة الإشعارات فوق. تقييد الحركة على {children} بس يخلي
-            المحتوى (الفيد/الـ thread) ينسحب لتحت مع pullY بينما الهيدر
-            والإشعارات يفضلوا زي ما هم تمامًا. */}
-        <motion.div style={{ y: pullY }}>
-          {children}
-        </motion.div>
+        {children}
       </main>
     </div>
   );

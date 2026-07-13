@@ -85,34 +85,34 @@ export function usePostForm({
     return () => clearTimeout(timer);
   }, [err]);
 
-  const submit = async () => {
+  const submit = async (): Promise<boolean> => {
     if (isBanned) {
       setErr(s.banned);
-      return;
+      return false;
     }
     // securityReady: false يعني تحميل بصمة الجهاز/حالة الحظر من التخزين
     // لم يكتمل بعد (نافذة قصيرة عند أول تحميل). نمنع النشر بهدوء ريثما
     // يكتمل، بدل الاعتماد فقط على فحص deviceHash المنفرد الذي كان يفوّت
     // حالات نادرة (مثال: isBanned لم يُحمَّل بعد فيُسمح بمنشور من جهاز محظور).
     if (!securityReady || !deviceHash) {
-      return;
+      return false;
     }
     if (!(text || "").trim() || text.length < 5) {
       setErr(s.eShort);
-      return;
+      return false;
     }
     if (text.length > 300) {
       setErr(s.eLong);
-      return;
+      return false;
     }
     if (isSpamQuality(text)) {
       setErr(s.spamQuality);
-      return;
+      return false;
     }
     const rate = await canPerformAction("post");
     if (!rate.allowed) {
       setErr(s.rateLimitPost(rate.waitSeconds));
-      return;
+      return false;
     }
 
     setIsPosting(true);
@@ -135,27 +135,33 @@ export function usePostForm({
       authorHash: deviceHash,
     };
 
-    setTimeout(() => {
-      savePosts((prev) => [newPost, ...prev]);
-      const o = { ...ownedPosts, [newPost.id]: true };
-      saveOwnedPosts(o);
+    // مُغلَّفة بـ Promise عشان الـ Promise اللي تُرجعها submit() ينتظر فعليًا
+    // حتى اكتمال هذا الجزء (بما فيه تأخير حركة "جارِ النشر..." المتعمَّد)،
+    // لا أن يُحسَم فور انتهاء الجزء المتزامن من الدالة فقط.
+    return new Promise<boolean>((resolve) => {
+      setTimeout(() => {
+        savePosts((prev) => [newPost, ...prev]);
+        const o = { ...ownedPosts, [newPost.id]: true };
+        saveOwnedPosts(o);
 
-      setText("");
-      setNote("");
-      setMdFile(null);
-      setVideoUrl("");
-      setPollOptions(["", ""]);
-      setCategory("عام");
-      setErr("");
-      setIsPosting(false);
-      clearPostDraft().catch(() => {});
-      showToast(s.toastPosted, 3000);
-      // نفس تأثير "التحديث" (سبروت لودر في زر الـ FAB) المستخدَم عند سحب
-      // الفيد لأعلى، يظهر أيضًا هنا بعد نشر منشور جديد بنجاح — طلب صريح من
-      // المستخدم. refreshPosts تتولى تفريغ أي كتابة معلَّقة أولاً (انظر
-      // تعليقها في usePostsData.ts) فتقرأ نسخة تتضمن المنشور الجديد فعليًا.
-      if (refreshPosts) refreshPosts();
-    }, isMobile ? 350 : 200);
+        setText("");
+        setNote("");
+        setMdFile(null);
+        setVideoUrl("");
+        setPollOptions(["", ""]);
+        setCategory("عام");
+        setErr("");
+        setIsPosting(false);
+        clearPostDraft().catch(() => {});
+        showToast(s.toastPosted, 3000);
+        // نفس تأثير "التحديث" (سبروت لودر في زر الـ FAB) المستخدَم عند سحب
+        // الفيد لأعلى، يظهر أيضًا هنا بعد نشر منشور جديد بنجاح — طلب صريح من
+        // المستخدم. refreshPosts تتولى تفريغ أي كتابة معلَّقة أولاً (انظر
+        // تعليقها في usePostsData.ts) فتقرأ نسخة تتضمن المنشور الجديد فعليًا.
+        if (refreshPosts) refreshPosts();
+        resolve(true);
+      }, isMobile ? 350 : 200);
+    });
   };
 
   return {

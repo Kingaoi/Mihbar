@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { IconPencil, IconMessageCircle, IconFileText } from "./Icons";
 import { FONT, RADIUS, CATS, ANIMATIONS, FLAG_HIDE_LIMIT } from "../constants/index";
 import { timeAgo } from "../utils/index";
@@ -7,6 +8,8 @@ import ActionMenuButton from "./ActionMenuButton";
 import ReactionRow from "./ReactionRow";
 import { MdBadge } from "./MdBadge";
 import { PollRenderer } from "./PollRenderer";
+import { LinkPreview } from "./LinkPreview";
+import { TextWithLinks, extractFirstUrl } from "./TextWithLinks";
 import { MdAttachRow } from "./MdAttachRow";
 import { VideoPlayer } from "./VideoPlayer";
 import CommentItem from "./CommentItem";
@@ -76,6 +79,8 @@ export default function ThreadView({
   btnSecondary,
   inputBase,
   R,
+  pullY,
+  pullAnchorRef,
 }) {
   if (!activePost) return null;
 
@@ -177,6 +182,7 @@ export default function ThreadView({
                 onChange={(e) => setEditPostText(e.target.value)}
                 maxLength={300}
                 autoFocus
+                dir="auto"
                 style={{
                   ...inputBase,
                   width: "100%",
@@ -202,9 +208,8 @@ export default function ThreadView({
             </div>
           ) : (
             <>
-              <p style={{ margin: "0 0 10px", fontSize: R.bodyText, lineHeight: 1.78, color: CL.text, wordBreak: "break-word" }}>
-                {activePost.text}
-              </p>
+              <TextWithLinks text={activePost.text} CL={CL} style={{ margin: "0 0 10px", fontSize: R.bodyText, lineHeight: 1.78, color: CL.text, wordBreak: "break-word" }} />
+              <LinkPreview url={extractFirstUrl(activePost.text)} CL={CL} BORDERS={BORDERS} />
               <PollRenderer poll={activePost.poll} postId={activePost.id} CL={CL} BORDERS={BORDERS} s={s} handlePollVote={handlePollVote} deviceHash={deviceHash} />
               {activePost.mdFile && (
                 <MdBadge
@@ -290,6 +295,7 @@ export default function ThreadView({
                 placeholder={s.commentPh}
                 maxLength={300}
                 rows={1}
+                dir="auto"
                 style={{
                   ...inputBase,
                   flex: 1,
@@ -372,74 +378,82 @@ export default function ThreadView({
           </div>
         )}
 
-        {/* Comments list */}
-        {(activePost?.comments || []).length === 0 ? (
-          <div style={{ textAlign: "center", padding: "48px 20px", color: CL.textMuted }}>
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-              <IconMessageCircle size={38} color={CL.textMuted} />
+        {/* Comments list — قسم التعليقات: هو الجزء اللي ينسحب فعليًا لتحت مع
+            pullY أثناء pull-to-refresh داخل صفحة المنشور المفتوح (المنشور
+            نفسه وصندوق كتابة تعليق جديد يفضلوا ثابتين). المرساة أسفله ثابتة
+            (خارج التحويل) عشان تفعّل السحب لما توصل بداية التعليقات فعليًا،
+            حتى لو المنشور نفسه لسة يقدر يتمرّر لفوق أكثر (بدل ما يشترط
+            الوصول لقمة الصفحة المطلقة اللي ممكن تكون بعيدة عن التعليقات). */}
+        <div ref={pullAnchorRef} style={{ height: 0 }} aria-hidden />
+        <motion.div style={{ y: pullY }}>
+          {(activePost?.comments || []).length === 0 ? (
+            <div style={{ textAlign: "center", padding: "48px 20px", color: CL.textMuted }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                <IconMessageCircle size={38} color={CL.textMuted} />
+              </div>
+              <div style={{ fontSize: FONT.heading, marginBottom: 5 }}>{s.noComments}</div>
+              <div style={{ fontSize: FONT.body }}>{s.noCommentsSub}</div>
             </div>
-            <div style={{ fontSize: FONT.heading, marginBottom: 5 }}>{s.noComments}</div>
-            <div style={{ fontSize: FONT.body }}>{s.noCommentsSub}</div>
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {(activePost?.comments || [])
-              .filter((c) => isEntityVisible(c.votes, FLAG_HIDE_LIMIT))
-              .map((c) => (
-                <CommentItem
-                  key={c.id}
-                  c={c}
-                  activePost={activePost}
-                  deviceHash={deviceHash}
-                  ownedComments={ownedComments}
-                  ownedReplies={ownedReplies}
-                  editingCommentId={editingCommentId}
-                  setEditingCommentId={setEditingCommentId}
-                  editCommentText={editCommentText}
-                  setEditCommentText={setEditCommentText}
-                  saveEditComment={saveEditComment}
-                  editingReplyInfo={editingReplyInfo}
-                  setEditingReplyInfo={setEditingReplyInfo}
-                  editReplyText={editReplyText}
-                  setEditReplyText={setEditReplyText}
-                  saveEditReply={saveEditReply}
-                  deleteComment={deleteComment}
-                  deleteReply={deleteReply}
-                  cancelEdit={cancelEdit}
-                  replyText={replyText}
-                  setReplyText={setReplyText}
-                  addReply={addReply}
-                  isReplying2={isReplying2}
-                  replyMdFile={replyMdFile}
-                  setReplyMdFile={setReplyMdFile}
-                  replyVideoUrl={replyVideoUrl}
-                  setReplyVideoUrl={setReplyVideoUrl}
-                  replyingToId={replyingToId}
-                  expandedIds={expandedIds}
-                  toggleReplies={toggleReplies}
-                  startReply={startReply}
-                  openMenuFor={openMenuFor}
-                  setOpenMenuFor={setOpenMenuFor}
-                  copyItemText={copyItemText}
-                  shareItemText={shareItemText}
-                  updateVotes={updateVotes}
-                  openMdEditor={openMdEditor}
-                  isBanned={isBanned}
-                  err={err}
-                  setErr={setErr}
-                  CL={CL}
-                  BORDERS={BORDERS}
-                  isMobile={isMobile}
-                  s={s}
-                  btn0={btn0}
-                  btnPrimary={btnPrimary}
-                  btnSecondary={btnSecondary}
-                  inputBase={inputBase}
-                  R={R}
-                />
-              ))}
-          </div>
-        )}
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {(activePost?.comments || [])
+                .filter((c) => isEntityVisible(c.votes, FLAG_HIDE_LIMIT))
+                .map((c) => (
+                  <CommentItem
+                    key={c.id}
+                    c={c}
+                    activePost={activePost}
+                    deviceHash={deviceHash}
+                    ownedComments={ownedComments}
+                    ownedReplies={ownedReplies}
+                    editingCommentId={editingCommentId}
+                    setEditingCommentId={setEditingCommentId}
+                    editCommentText={editCommentText}
+                    setEditCommentText={setEditCommentText}
+                    saveEditComment={saveEditComment}
+                    editingReplyInfo={editingReplyInfo}
+                    setEditingReplyInfo={setEditingReplyInfo}
+                    editReplyText={editReplyText}
+                    setEditReplyText={setEditReplyText}
+                    saveEditReply={saveEditReply}
+                    deleteComment={deleteComment}
+                    deleteReply={deleteReply}
+                    cancelEdit={cancelEdit}
+                    replyText={replyText}
+                    setReplyText={setReplyText}
+                    addReply={addReply}
+                    isReplying2={isReplying2}
+                    replyMdFile={replyMdFile}
+                    setReplyMdFile={setReplyMdFile}
+                    replyVideoUrl={replyVideoUrl}
+                    setReplyVideoUrl={setReplyVideoUrl}
+                    replyingToId={replyingToId}
+                    expandedIds={expandedIds}
+                    toggleReplies={toggleReplies}
+                    startReply={startReply}
+                    openMenuFor={openMenuFor}
+                    setOpenMenuFor={setOpenMenuFor}
+                    copyItemText={copyItemText}
+                    shareItemText={shareItemText}
+                    updateVotes={updateVotes}
+                    openMdEditor={openMdEditor}
+                    isBanned={isBanned}
+                    err={err}
+                    setErr={setErr}
+                    CL={CL}
+                    BORDERS={BORDERS}
+                    isMobile={isMobile}
+                    s={s}
+                    btn0={btn0}
+                    btnPrimary={btnPrimary}
+                    btnSecondary={btnSecondary}
+                    inputBase={inputBase}
+                    R={R}
+                  />
+                ))}
+            </div>
+          )}
+        </motion.div>
       </div>
     </div>
   );

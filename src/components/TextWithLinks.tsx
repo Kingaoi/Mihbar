@@ -14,7 +14,7 @@ export function TextWithLinks({ text, CL, style }) {
   const urlParts = text.split(urlRegex);
 
   return (
-    <p style={style}>
+    <p dir="auto" style={style}>
       {urlParts.map((part, i) => {
         if (part.match(urlRegex)) {
           return (

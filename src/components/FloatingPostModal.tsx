@@ -67,9 +67,9 @@ export function FloatingPostModal({
                 text={text} setText={setText} note={note} setNote={setNote} category={category} setCategory={setCategory}
                 mdFile={mdFile} setMdFile={setMdFile} videoUrl={videoUrl} setVideoUrl={setVideoUrl} pollOptions={pollOptions} setPollOptions={setPollOptions} isBanned={isBanned}
                 isPosting={isPosting}
-                submit={() => {
-                  submit();
-                  setFloatingPostOpen(false);
+                submit={async () => {
+                  const ok = await submit();
+                  if (ok) setFloatingPostOpen(false);
                 }}
                 err={err} setErr={setErr} openMdEditor={openMdEditor} activeCatRef={activeCatRef}
                 currentPlaceholder={s.PLACEHOLDERS[0]} radiusXl={(RADIUS as any).xl || 18} CL={CL} BORDERS={BORDERS} isMobile={isMobile} s={s}

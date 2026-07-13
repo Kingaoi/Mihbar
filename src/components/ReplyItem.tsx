@@ -121,6 +121,7 @@ export default function ReplyItem({
               maxLength={300}
               autoFocus
               rows={2}
+              dir="auto"
               style={{
                 ...inputBase,
                 width: "100%",

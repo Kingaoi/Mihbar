@@ -25,6 +25,19 @@ interface LinkPreviewProps {
 // عن عدد المكوّنات التي تطلبه في نفس اللحظة.
 const inFlightRequests = new Map<string, Promise<LinkPreviewData | null>>();
 
+// إصلاح باگ: new window.URL(data.url).hostname كانت تُستدعى مباشرة بدون
+// أي try/catch — لو أرجع API خارجي (microlink.io) قيمة url غير صالحة كـ
+// URL (سلسلة فارغة، نص بدون بروتوكول، إلخ)، هذا يرمي TypeError يكسر رندر
+// المكوّن بالكامل (بلا error boundary هنا). الآن نتحقق بأمان ونُرجع
+// fallback (الرابط الخام كما وصل) بدل الانهيار.
+function safeHostname(url: string): string {
+  try {
+    return new window.URL(url).hostname;
+  } catch {
+    return url || "";
+  }
+}
+
 async function fetchLinkPreview(url: string): Promise<LinkPreviewData | null> {
   const cacheKey = `link_preview_${url}`;
   const cached = window.sessionStorage.getItem(cacheKey);
@@ -44,11 +57,21 @@ async function fetchLinkPreview(url: string): Promise<LinkPreviewData | null> {
       const res = await window.fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`);
       const json = await res.json();
       if (json.status === "success" && json.data) {
+        // نتحقق من بروتوكول data.url القادم من استجابة API خارجي (microlink.io)
+        // قبل استخدامه كـ href قابل للنقر — نفس مبدأ فحص https?:// المُطبَّق
+        // في renderMarkdown لأي رابط من مصدر غير موثوق بالكامل. الرابط
+        // الأصلي المُرسَل بالطلب آمن دائمًا (كل نقاط استدعاء LinkPreview
+        // تُمرره عبر extractFirstUrl المُقيَّد بـ https?:// أصلاً)، لكن ما
+        // يُرجعه API نفسه في الاستجابة قد يختلف نظريًا، فلا نثق فيه ضمنيًا.
+        const reportedUrl = json.data.url;
+        const safeUrl = typeof reportedUrl === "string" && /^https?:\/\//.test(reportedUrl)
+          ? reportedUrl
+          : url;
         const result: LinkPreviewData = {
           title: json.data.title || "",
           description: json.data.description || "",
           image: json.data.image?.url || "",
-          url: json.data.url || url,
+          url: safeUrl,
           publisher: json.data.publisher || "",
         };
         window.sessionStorage.setItem(cacheKey, JSON.stringify(result));
@@ -159,7 +182,7 @@ export function LinkPreview({ url, CL, BORDERS }: LinkPreviewProps) {
         )}
         {(data.publisher || data.url) && (
           <div style={{ fontSize: 11, color: CL.textSub, marginTop: 2, textTransform: "uppercase", letterSpacing: 0.5 }}>
-            {data.publisher || new window.URL(data.url).hostname}
+            {data.publisher || safeHostname(data.url)}
           </div>
         )}
       </div>
