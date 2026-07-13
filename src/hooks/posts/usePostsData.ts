@@ -30,12 +30,6 @@ export function usePostsData({ deviceHash, savedPosts }) {
     }
   });
   const [loading, setLoading] = useState(() => typeof window === "undefined");
-  // isRefreshing: منفصل عن loading (الذي يمثّل فقط التحميل الأولي عند فتح
-  // التطبيق). هذا يمثّل تحديث لاحق يدوي (سحب لأعلى/بعد نشر منشور) — نعيد
-  // قراءة نفس مصدر البيانات (loadAllPosts) دون افتراض وجود بيانات جديدة
-  // فعليًا؛ عند الربط بـ Supabase مستقبلاً هذا سيصبح طلب شبكة حقيقي بنفس
-  // الشكل (نفس التوقيع، بلا تغيير في المستدعين).
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [tab, setTab] = useState("recent");
   const [catFilter, setCatFilter] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -119,32 +113,6 @@ export function usePostsData({ deviceHash, savedPosts }) {
 
   useEffect(() => {
     return () => flushSave();
-  }, [flushSave]);
-
-  // refreshPosts: يُستدعى عند سحب الفيد لأعلى (pull-to-refresh) أو بعد نشر
-  // منشور جديد بنجاح. يعيد قراءة loadAllPosts فعليًا (وليس فقط "محاكاة"
-  // تحميل)، مفيد الآن لو فُتح التطبيق بأكثر من تبويب على نفس الجهاز، وسيصبح
-  // الجلب الحقيقي للمحتوى الجديد من الخادم بعد الربط بـ Supabase دون تغيير
-  // في نقطة الاستدعاء. isRefreshing يبقى true طوال مدة القراءة الفعلية،
-  // ولا نعتمد على مؤقّت وهمي — الزر (FAB) يُعطَّل طالما القيمة true فعليًا.
-  //
-  // ملاحظة مهمة: savePosts تكتب فعليًا لـ localStorage بعد debounce من 400ms
-  // (انظر التعليق فوق flushSave). لو استدعينا loadAllPosts مباشرة بعد نشر
-  // منشور جديد (savePosts) بدون flush أولاً، كنا سنقرأ نسخة قديمة من
-  // التخزين (بدون المنشور الجديد) ونُبطل التحديث المتفائل المعروض فعلاً في
-  // الشاشة. flushSave() هنا يضمن كتابة أي تغيير معلَّق أولاً قبل القراءة.
-  const refreshPosts = useCallback(async () => {
-    setIsRefreshing(true);
-    flushSave();
-    try {
-      const stored = await loadAllPosts();
-      const cleaned = stored.filter((p) => p && p.id && !p.id.startsWith("seed-"));
-      setPosts(cleaned);
-    } catch (e) {
-      console.error("Failed to refresh posts:", e);
-    } finally {
-      setIsRefreshing(false);
-    }
   }, [flushSave]);
 
   const savePosts = useCallback((fn) => {
@@ -241,8 +209,6 @@ export function usePostsData({ deviceHash, savedPosts }) {
     setPosts,
     loading,
     setLoading,
-    isRefreshing,
-    refreshPosts,
     tab,
     setTab,
     catFilter,

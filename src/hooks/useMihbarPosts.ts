@@ -34,7 +34,7 @@ export function useMihbarPosts({
 }) {
   // 1. Posts Data Storage, Filtering & Reactions
   const postsData = usePostsData({ deviceHash, savedPosts });
-  const { posts, setPosts, loading, isRefreshing, refreshPosts, tab, setTab, catFilter, setCatFilter, searchQuery, setSearchQuery, activeCatRef, displayed, savePosts, updateVotes, handlePollVote } = postsData;
+  const { posts, setPosts, loading, tab, setTab, catFilter, setCatFilter, searchQuery, setSearchQuery, activeCatRef, displayed, savePosts, updateVotes, handlePollVote } = postsData;
 
   // 2. Post Creation Form State
   const postForm = usePostForm({
@@ -46,7 +46,6 @@ export function useMihbarPosts({
     ownedPosts,
     saveOwnedPosts,
     savePosts,
-    refreshPosts,
     showToast,
   });
   const {
@@ -244,8 +243,6 @@ export function useMihbarPosts({
     posts,
     setPosts,
     loading,
-    isRefreshing,
-    refreshPosts,
     displayed,
     isPosting,
     isCommenting,

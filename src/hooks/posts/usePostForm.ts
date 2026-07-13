@@ -11,7 +11,6 @@ export function usePostForm({
   ownedPosts,
   saveOwnedPosts,
   savePosts,
-  refreshPosts,
   showToast,
 }) {
   const [text, setText] = useState("");
@@ -150,11 +149,6 @@ export function usePostForm({
       setIsPosting(false);
       clearPostDraft().catch(() => {});
       showToast(s.toastPosted, 3000);
-      // نفس تأثير "التحديث" (سبروت لودر في زر الـ FAB) المستخدَم عند سحب
-      // الفيد لأعلى، يظهر أيضًا هنا بعد نشر منشور جديد بنجاح — طلب صريح من
-      // المستخدم. refreshPosts تتولى تفريغ أي كتابة معلَّقة أولاً (انظر
-      // تعليقها في usePostsData.ts) فتقرأ نسخة تتضمن المنشور الجديد فعليًا.
-      if (refreshPosts) refreshPosts();
     }, isMobile ? 350 : 200);
   };
 
