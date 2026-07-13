@@ -47,7 +47,7 @@ export function PollRenderer({ poll, postId, CL, BORDERS, s, handlePollVote, dev
                 zIndex: 1,
                 overflow: "hidden",
                 transition: TRANSITIONS.colorChange,
-                textAlign: "start",
+                textAlign: s.d === "rtl" ? "right" : "left",
                 minHeight: 44
               }}
             >
@@ -68,7 +68,7 @@ export function PollRenderer({ poll, postId, CL, BORDERS, s, handlePollVote, dev
               
               <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
                 {isSelected && <IconCheck size={16} color={CL.accent} strokeWidth={3} />}
-                <span dir="auto" style={{ fontWeight: isSelected ? 800 : 500, flex: 1 }}>{opt.text}</span>
+                <span style={{ fontWeight: isSelected ? 800 : 500, flex: 1 }}>{opt.text}</span>
               </div>
               
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>

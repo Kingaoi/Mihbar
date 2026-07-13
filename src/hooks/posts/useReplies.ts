@@ -97,13 +97,6 @@ export function useReplies({
           };
         })
       );
-      // إصلاح تسريب بيانات: الملكية (ownedReplies) لم تكن تُنظَّف إطلاقًا
-      // عند حذف رد — يبقى معرّفه يتيمًا في localStorage للأبد.
-      if (ownedReplies[replyId]) {
-        const or_ = { ...ownedReplies };
-        delete or_[replyId];
-        saveOwnedReplies(or_);
-      }
       showToast(s.toastReplyDeleted);
     });
   };

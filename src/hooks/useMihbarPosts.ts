@@ -33,7 +33,7 @@ export function useMihbarPosts({
   setProfilePageOpen,
 }) {
   // 1. Posts Data Storage, Filtering & Reactions
-  const postsData = usePostsData({ deviceHash, securityReady, savedPosts });
+  const postsData = usePostsData({ deviceHash, savedPosts });
   const { posts, setPosts, loading, isRefreshing, refreshPosts, tab, setTab, catFilter, setCatFilter, searchQuery, setSearchQuery, activeCatRef, displayed, savePosts, updateVotes, handlePollVote } = postsData;
 
   // 2. Post Creation Form State
@@ -81,11 +81,8 @@ export function useMihbarPosts({
     isBanned,
     deviceHash,
     securityReady,
-    posts,
     ownedComments,
     saveOwnedComments,
-    ownedReplies,
-    saveOwnedReplies,
     savePosts,
     showToast,
     setErr,
@@ -172,7 +169,6 @@ export function useMihbarPosts({
   // 6. Post Editing & Deletion
   const postEditing = usePostEditing({
     s,
-    posts,
     savePosts,
     showToast,
     ownedPosts,

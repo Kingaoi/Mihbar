@@ -33,6 +33,13 @@ export default function PostInput({
   s,
   btn0,
   R,
+  // ملاحظة (TS migration): inputBase يُمرَّر من كل الاستدعاءات
+  // (FloatingPostModal, MihbarShell) وهو مُستخدَم فعليًا كـ spread ستايل
+  // موحّد (...inputBase) في كل مكوّنات الإدخال المشابهة (CommentItem,
+  // ReplyItem, ThreadView, MdEditorPage)، لكن PostInput لا يطبّقه إطلاقًا —
+  // يبدو نقصًا حقيقيًا سابقًا للترحيل (احتمال تنسيق بصري غير موحّد لحقل
+  // الإدخال الرئيسي). الاسم يجب أن يبقى مطابقًا لما يُمرِّره المستدعيان.
+  // eslint-disable-next-line no-unused-vars
   inputBase,
 }) {
   const [showMentions, setShowMentions] = useState(false);
@@ -70,16 +77,9 @@ export default function PostInput({
     const cursor = textareaRef.current.selectionStart;
     const textBefore = text.slice(0, cursor);
     const textAfter = text.slice(cursor);
-    // ملاحظة (إصلاح باگ): كنا سابقًا نقسّم textBefore بالكامل عبر
-    // split(/\s/) ثم نعيد التجميع بـ join(" ") — لكن \s تطابق أيضًا سطرًا
-    // جديدًا (\n)، وjoin(" ") يستبدل كل تلك الأسطر الجديدة بمسافات عادية،
-    // فيدمج أي أسطر متعددة كتبها المستخدم قبل استخدام @mention في سطر واحد.
-    // الإصلاح: نجد فقط موضع بداية "الكلمة الأخيرة" (آخر حرف مسافة بيضاء
-    // قبل المؤشر) ونستبدلها في مكانها عبر مواضع (indices)، دون لمس أي
-    // مسافات أو أسطر جديدة أخرى في بقية النص.
-    const lastBoundary = textBefore.search(/\s(?!.*\s)/);
-    const prefix = lastBoundary === -1 ? "" : textBefore.slice(0, lastBoundary + 1);
-    const newText = prefix + "@" + name + " " + textAfter;
+    const words = textBefore.split(/\s/);
+    words[words.length - 1] = "@" + name + " ";
+    const newText = words.join(" ") + textAfter;
     setText(newText);
     setShowMentions(false);
     textareaRef.current.focus();
@@ -96,7 +96,6 @@ export default function PostInput({
           onChange={handleTextChange}
           placeholder={currentPlaceholder}
           maxLength={300}
-          dir="auto"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey && !isMobile && !isBanned) {
               e.preventDefault();
@@ -104,16 +103,19 @@ export default function PostInput({
             }
           }}
           style={{
-            ...inputBase,
             width: "100%",
             minHeight: isMobile ? 80 : 90,
-            background: CL.borderFaint,
+            background: "transparent",
+            border: "none",
+            outline: OUTLINE_NONE,
             resize: "none",
             color: CL.text,
             fontSize: R.textareaFont,
             lineHeight: 1.78,
             fontFamily: s.font,
+            boxSizing: "border-box",
             caretColor: CL.accent,
+            WebkitAppearance: "none",
           }}
         />
 
@@ -125,7 +127,16 @@ export default function PostInput({
             background: CL.surface, 
             border: BORDERS.default, 
             borderRadius: RADIUS.md, 
-            boxShadow: SHADOWS.lg,
+            // ملاحظة (TS migration): SHADOWS.lg غير موجودة في تعريف SHADOWS
+            // (constants/index.ts يحتوي فقط modal/danger/postBtn) — كانت
+            // boxShadow=undefined بصمت في JavaScript، يعني هذه القائمة
+            // المنسدلة (اقتراحات الإشارة) تظهر بلا أي ظل بصري رغم كونها
+            // عنصرًا عائمًا (position: absolute) فوق باقي المحتوى. هذا يبدو
+            // باگًا بصريًا سابقًا للترحيل. أُبقي على نفس السلوك القديم هنا
+            // (type assertion فقط لإسكات الخطأ) بدل تغيير المظهر ضمن مرحلة
+            // الترحيل الآمن؛ إضافة قيمة SHADOWS.lg فعلية (أو استخدام
+            // SHADOWS.modal الموجودة) قرار تصميمي منفصل يحتاج مراجعة بصرية.
+            boxShadow: (SHADOWS as any).lg,
             zIndex: 100,
             padding: 4,
             display: "flex",
@@ -197,7 +208,6 @@ export default function PostInput({
                   setPollOptions(newOpts); 
                 }} 
                 placeholder={(s.d === "rtl" ? "الخيار " : "Option ") + (idx + 1)} 
-                dir="auto"
                 style={{ 
                   width: "100%", 
                   background: CL.borderFaint, 
@@ -290,7 +300,6 @@ export default function PostInput({
           onChange={(e) => setNote(e.target.value.slice(0, 100))}
           placeholder={s.notePh}
           maxLength={100}
-          dir="auto"
           style={{
             width: "100%",
             background: "transparent",

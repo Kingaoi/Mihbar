@@ -33,7 +33,6 @@ export default function ProfileCommentItem({
         }}
       >
         <span
-          dir="auto"
           style={{
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -46,7 +45,6 @@ export default function ProfileCommentItem({
         <span style={{ flexShrink: 0 }}>{timeAgo(p.timestamp, s)}</span>
       </div>
       <p
-        dir="auto"
         style={{
           margin: 0,
           fontSize: R.bodyText,

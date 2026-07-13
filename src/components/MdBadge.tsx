@@ -229,7 +229,8 @@ export function MdBadge({
                 flex: "1 1 auto",
                 minHeight: 0,
                 marginBottom: 18,
-                textAlign: "start",
+                textAlign: isAr ? "right" : "left",
+                direction: isAr ? "rtl" : "ltr",
                 userSelect: "text",
                 WebkitUserSelect: "text",
               }}

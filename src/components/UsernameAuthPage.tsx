@@ -234,32 +234,9 @@ export default function UsernameAuthPage({
           )}
         </div>
 
-        {/* ملاحظة المعاينة — نفس نمط ProfilePage.tsx profileLocalNote تمامًا،
-            توضّح للمستخدم أن هذا تصميم فقط قبل أن يملأ النموذج، لا بعد. */}
-        <div
-          style={{
-            background: CL.borderFaint,
-            border: BORDERS.default,
-            borderRadius: RADIUS.md,
-            padding: "10px 12px",
-            marginBottom: 16,
-            fontSize: FONT.label,
-            color: CL.textSub,
-            wordBreak: "break-word",
-            textAlign: "center",
-          }}
-        >
-          {s.authPreviewNote}
-        </div>
-
-        {/* زر الإرسال الرئيسي — معطّل عمدًا (aria-disabled + opacity) بما أن
-            onSubmit ما يعمل شيء فعلي بعد (انظر التعليق أعلى المكوّن) — تعطيل
-            الزر بصريًا أوضح للمستخدم من ترك النموذج يبتلع كلمة مرور حقيقية
-            بصمت بلا أي استجابة عند الضغط. */}
+        {/* زر الإرسال الرئيسي */}
         <button
           className="pressable"
-          disabled
-          aria-disabled="true"
           style={{
             ...btnPrimary,
             width: "100%",
@@ -267,8 +244,6 @@ export default function UsernameAuthPage({
             fontSize: FONT.bodyLg,
             minHeight: isMobile ? 50 : "auto",
             marginBottom: 14,
-            opacity: 0.5,
-            cursor: "not-allowed",
           }}
         >
           {isSignup ? s.authSubmitSignup : s.authSubmitLogin}

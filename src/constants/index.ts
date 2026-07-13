@@ -135,7 +135,6 @@ export const SHADOWS = {
   modal:    "0 10px 40px rgba(0,0,0,0.4)",
   danger:   "0 10px 50px rgba(192,85,74,0.25)",
   postBtn:  "0 3px 16px rgba(217,119,87,0.28)",
-  lg:       "0 8px 24px rgba(0,0,0,0.28)",
 };
 
 export const OUTLINE_NONE = "none";

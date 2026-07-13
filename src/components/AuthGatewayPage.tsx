@@ -23,7 +23,6 @@ function GoogleGlyph({ size = 18 }) {
 // الثابت بـ SettingsPage/ProfilePage).
 export default function AuthGatewayPage({
   authPageOpen,
-  authView,
   setAuthPageOpen,
   setAuthView,
   CL,
@@ -33,14 +32,7 @@ export default function AuthGatewayPage({
   s,
   btn0,
 }) {
-  // إصلاح باگ: هذا الشرط كان يعتمد فقط على authPageOpen، بدون التحقق من
-  // authView. عند الانتقال لشاشة اسم المستخدم (setAuthView("username"))،
-  // كانت هذه الصفحة تبقى مُركّبة (mounted) وتُعرض في نفس الوقت مع
-  // UsernameAuthPage — كلاهما position:fixed;inset:0 بنفس الـ zIndex،
-  // متراكبتين فعليًا في الـ DOM. الآن نتحقق أيضًا من authView === "gateway"
-  // (نفس الشرط الذي تتحقق منه UsernameAuthPage من الطرف الآخر: authView === "username")
-  // بحيث الاثنتان دائمًا متبادلتا الحصرية (mutually exclusive).
-  if (!authPageOpen || authView !== "gateway") return null;
+  if (!authPageOpen) return null;
 
   return (
     <div
@@ -106,45 +98,29 @@ export default function AuthGatewayPage({
 
           {/* خيارات الدخول */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ position: "relative" }}>
-              <button
-                className="pressable"
-                disabled
-                aria-disabled="true"
-                style={{
-                  ...btn0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 10,
-                  width: "100%",
-                  background: "#ffffff",
-                  border: "1px solid rgba(0,0,0,0.12)",
-                  borderRadius: RADIUS.md,
-                  padding: isMobile ? "13px 16px" : "12px 16px",
-                  color: "#1f1f1f",
-                  fontSize: FONT.bodyLg,
-                  fontWeight: 700,
-                  minHeight: isMobile ? 50 : "auto",
-                  boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
-                  opacity: 0.5,
-                  cursor: "not-allowed",
-                }}
-              >
-                <GoogleGlyph size={18} />
-                {s.authContinueGoogle}
-              </button>
-              <div
-                style={{
-                  textAlign: "center",
-                  fontSize: FONT.label,
-                  color: CL.textMuted,
-                  marginTop: 6,
-                }}
-              >
-                {s.authPreviewNote}
-              </div>
-            </div>
+            <button
+              className="pressable"
+              style={{
+                ...btn0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                width: "100%",
+                background: "#ffffff",
+                border: "1px solid rgba(0,0,0,0.12)",
+                borderRadius: RADIUS.md,
+                padding: isMobile ? "13px 16px" : "12px 16px",
+                color: "#1f1f1f",
+                fontSize: FONT.bodyLg,
+                fontWeight: 700,
+                minHeight: isMobile ? 50 : "auto",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+              }}
+            >
+              <GoogleGlyph size={18} />
+              {s.authContinueGoogle}
+            </button>
 
             {/* فاصل "أو" */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "6px 0" }}>

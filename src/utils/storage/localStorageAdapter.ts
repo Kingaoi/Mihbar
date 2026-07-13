@@ -166,7 +166,7 @@ const secureLoad = (key, fallback = null) => {
     const payload = JSON.parse(payloadStr);
     if (!payload || typeof payload !== "object" || !payload.s || !payload.d) {
       console.warn(`[Mihbar Security] هيكل بيانات غير صالح أو تلاعب تم اكتشافه للمفتاح: ${key}`);
-      handleTamperingDetected(key);
+      handleTamperingDetected();
       return fallback;
     }
 
@@ -187,7 +187,7 @@ const secureLoad = (key, fallback = null) => {
 
     if (!isSigValid) {
       console.warn(`[Mihbar Security] فشل التحقق من البصمة الرقمية للمفتاح: ${key}`);
-      handleTamperingDetected(key);
+      handleTamperingDetected();
       return fallback;
     }
 
@@ -236,26 +236,12 @@ const verifyGlobalIntegrity = () => {
   }
 };
 
-// تلف/تلاعب في مفتاح واحد لا يعني بالضرورة أن كل بيانات الملكية فاسدة —
-// معالجة قديمة كانت تمسح OWNER_KEY/OWNED_COMMENTS_KEY/OWNED_REPLIES_KEY
-// الثلاثة دائمًا بغض النظر عن أي مفتاح فشل تحقق توقيعه فعليًا. هذا كان
-// يعني أن تلفًا عرضيًا بسيطًا في مفتاح غير حسّاس (مثال: عداد rate-limit،
-// أو حتى BANNED_KEY نفسه) يمحو ملكية كل المنشورات/التعليقات/الردود للمستخدم
-// دون أي داعٍ. الآن: نمسح فقط المفتاح المتضرر فعليًا إن كان معروفًا (يعيد
-// secureLoad اللاحق قيمة fallback الفارغة الآمنة له تلقائيًا)، ونحتفظ
-// بالمسح الشامل الثلاثي فقط لحالة عدم توفر اسم مفتاح محدد (استدعاء عام
-// من verifyGlobalIntegrity عند فشل التحقق الكلي فعلاً — راجع checkIfBanned
-// في utils/index.js).
-const handleTamperingDetected = (affectedKey?: string) => {
+const handleTamperingDetected = () => {
   console.error("[Mihbar Security] تم اكتشاف تلاعب في بيانات المحرك الأمني للعميل! سيتم اتخاذ إجراءات رادعة.");
   try {
-    if (affectedKey) {
-      localStorage.removeItem(affectedKey);
-    } else {
-      localStorage.removeItem(OWNER_KEY);
-      localStorage.removeItem(OWNED_COMMENTS_KEY);
-      localStorage.removeItem(OWNED_REPLIES_KEY);
-    }
+    localStorage.removeItem(OWNER_KEY);
+    localStorage.removeItem(OWNED_COMMENTS_KEY);
+    localStorage.removeItem(OWNED_REPLIES_KEY);
     updateGlobalIntegrity();
   } catch {}
 };

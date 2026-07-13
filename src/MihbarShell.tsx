@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import type { CSSProperties } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "motion/react";
@@ -89,10 +89,16 @@ export default function Mihbar() {
   // للحالتين لأن activePost مُشتقّة من posts (posts.find)، فإعادة جلب
   // المنشورات يحدّث تعليقات المنشور المفتوح تلقائيًا. يبقى معطّلًا فقط داخل
   // صفحات/نوافذ فرعية (إعدادات، بروفايل، نافذة نشر) ما إلها معنى تحديث فيها.
+  // مرساة بداية القسم القابل للسحب حاليًا: بداية قائمة المنشورات بالفيد
+  // الرئيسي، أو بداية قائمة التعليقات بصفحة المنشور — نفس ref واحد يُعاد
+  // ربطه تلقائيًا مع أي قسم يُعرض فعليًا (الاثنان لا يظهران بنفس الوقت).
+  const pullAnchorRef = useRef(null);
+
   const { pullY, pullProgress, maxPull } = usePullToRefresh({
     onRefresh: refreshPosts,
     isRefreshing,
     disabled: settingsPageOpen || profilePageOpen || floatingPostOpen || authPageOpen,
+    topAnchorRef: pullAnchorRef,
   });
 
   // Shared Styles retrieval
@@ -187,7 +193,7 @@ export default function Mihbar() {
       />
 
       <AuthGatewayPage
-        authPageOpen={authPageOpen} authView={authView} setAuthPageOpen={setAuthPageOpen} setAuthView={setAuthView}
+        authPageOpen={authPageOpen} setAuthPageOpen={setAuthPageOpen} setAuthView={setAuthView}
         CL={CL} BORDERS={BORDERS} isMobile={isMobile} isDesktop={isDesktop} s={s} btn0={btn0}
       />
 
@@ -225,7 +231,7 @@ export default function Mihbar() {
             toggleReplies={toggleReplies} savedPosts={savedPosts} toggleSavePost={toggleSavePost} startReply={startReply} openMenuFor={openMenuFor} setOpenMenuFor={setOpenMenuFor}
             copyItemText={copyItemText} shareItemText={shareItemText} updateVotes={updateVotes} handlePollVote={handlePollVote} openMdEditor={openMdEditor}
             isBanned={isBanned} err={err} setErr={setErr} CL={CL} BORDERS={BORDERS} isMobile={isMobile} s={s} btn0={btn0}
-            btnPrimary={btnPrimary} btnSecondary={btnSecondary} inputBase={inputBase} R={R} pullY={pullY}
+            btnPrimary={btnPrimary} btnSecondary={btnSecondary} inputBase={inputBase} R={R} pullY={pullY} pullAnchorRef={pullAnchorRef}
           />
         ) : (
           <>
@@ -296,9 +302,9 @@ export default function Mihbar() {
 
             {/* Feed items — قسم المنشورات: هو الجزء اللي ينسحب فعليًا لتحت مع
                 pullY أثناء pull-to-refresh بالفيد الرئيسي (التابات/فلاتر
-                الفئات فوقه تفضل ثابتة). تفعيل السحب نفسه يعتمد فقط على
-                window.scrollY=0 (قمة الصفحة المطلقة)، بصرف النظر عن موضع
-                هذا القسم تحديدًا. */}
+                الفئات فوقه تفضل ثابتة). المرساة أسفله ثابتة (خارج التحويل)
+                عشان تعكس موضع بداية القسم الحقيقي بدون تأثر بحركة السحب. */}
+            <div ref={pullAnchorRef} style={{ height: 0 }} aria-hidden />
             <motion.div style={{ y: pullY }}>
               {loading ? (
                 <div style={{ textAlign: "center", padding: 64, color: CL.textMuted }}>

@@ -19,29 +19,17 @@ export function MdAttachRow({
 }) {
   const [showVideoInput, setShowVideoInput] = useState(false);
   const [tempUrl, setTempUrl] = useState("");
-  const [videoUrlError, setVideoUrlError] = useState(false);
 
-  // إصلاح: كانت handleAttachVideo تقبل أي نص كرابط فيديو بدون أي تحقق من
-  // الصيغة (لا حتى التأكد من وجود http(s)://). النتيجة: مستخدم يكتب نصًا
-  // خاطئًا يحصل على مرفق "فيديو" لا يعمل بصمت (VideoPlayer لاحقًا يضعه
-  // كـ src مباشرة بلا رسالة خطأ واضحة). تحقق بسيط هنا يمنع الحالة الشائعة
-  // (نسيان النسخ الكامل للرابط، أو كتابة نص عشوائي) برسالة فورية.
   const handleAttachVideo = () => {
-    const trimmed = tempUrl.trim();
-    if (!trimmed) return;
-    if (!/^https?:\/\//i.test(trimmed)) {
-      setVideoUrlError(true);
-      return;
+    if (tempUrl.trim()) {
+      setVideoUrl(tempUrl.trim());
+      setShowVideoInput(false);
     }
-    setVideoUrlError(false);
-    setVideoUrl(trimmed);
-    setShowVideoInput(false);
   };
 
   const handleRemoveVideo = () => {
     setVideoUrl("");
     setTempUrl("");
-    setVideoUrlError(false);
   };
 
   return (
@@ -118,7 +106,6 @@ export function MdAttachRow({
               onClick={() => {
                 setShowVideoInput(true);
                 setTempUrl("");
-                setVideoUrlError(false);
               }}
               style={{
                 ...btn0,
@@ -144,74 +131,64 @@ export function MdAttachRow({
               {s.attachVideo}
             </button>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "nowrap" }}>
-                <input
-                  type="text"
-                  placeholder={s.videoUrlPh}
-                  value={tempUrl}
-                  onChange={(e) => {
-                    setTempUrl(e.target.value);
-                    if (videoUrlError) setVideoUrlError(false);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAttachVideo();
-                    } else if (e.key === "Escape") {
-                      setShowVideoInput(false);
-                    }
-                  }}
-                  style={{
-                    background: CL.borderFaint,
-                    border: `1px solid ${videoUrlError ? CL.danger : CL.border}`,
-                    borderRadius: RADIUS.sm,
-                    padding: "4px 8px",
-                    fontSize: FONT.caption,
-                    color: CL.text,
-                    outline: "none",
-                    width: isMobile ? "150px" : "240px",
-                  }}
-                  autoFocus
-                />
-                <button
-                  onClick={handleAttachVideo}
-                  disabled={!tempUrl.trim()}
-                  style={{
-                    ...btn0,
-                    background: tempUrl.trim() ? CL.accent : CL.accentDim,
-                    border: "none",
-                    borderRadius: RADIUS.sm,
-                    padding: "4px 8px",
-                    color: "#fff",
-                    fontSize: FONT.caption,
-                    fontWeight: "bold",
-                    minHeight: isMobile ? 28 : "auto",
-                  }}
-                >
-                  {s.confirmAttachVideo || (s.d === "rtl" ? "إرفاق" : "Attach")}
-                </button>
-                <button
-                  onClick={() => setShowVideoInput(false)}
-                  style={{
-                    ...btn0,
-                    background: "transparent",
-                    border: `1px solid ${CL.border}`,
-                    borderRadius: RADIUS.sm,
-                    padding: "4px 8px",
-                    color: CL.textSub,
-                    fontSize: FONT.caption,
-                    minHeight: isMobile ? 28 : "auto",
-                  }}
-                >
-                  {s.cancelVideo || (s.d === "rtl" ? "إلغاء" : "Cancel")}
-                </button>
-              </div>
-              {videoUrlError && (
-                <span style={{ fontSize: FONT.micro, color: CL.danger }}>
-                  {s.d === "rtl" ? "الرابط يجب أن يبدأ بـ http:// أو https://" : "Link must start with http:// or https://"}
-                </span>
-              )}
+            <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "nowrap" }}>
+              <input
+                type="text"
+                placeholder={s.videoUrlPh}
+                value={tempUrl}
+                onChange={(e) => setTempUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAttachVideo();
+                  } else if (e.key === "Escape") {
+                    setShowVideoInput(false);
+                  }
+                }}
+                style={{
+                  background: CL.borderFaint,
+                  border: `1px solid ${CL.border}`,
+                  borderRadius: RADIUS.sm,
+                  padding: "4px 8px",
+                  fontSize: FONT.caption,
+                  color: CL.text,
+                  outline: "none",
+                  width: isMobile ? "150px" : "240px",
+                }}
+                autoFocus
+              />
+              <button
+                onClick={handleAttachVideo}
+                disabled={!tempUrl.trim()}
+                style={{
+                  ...btn0,
+                  background: tempUrl.trim() ? CL.accent : CL.accentDim,
+                  border: "none",
+                  borderRadius: RADIUS.sm,
+                  padding: "4px 8px",
+                  color: "#fff",
+                  fontSize: FONT.caption,
+                  fontWeight: "bold",
+                  minHeight: isMobile ? 28 : "auto",
+                }}
+              >
+                {s.confirmAttachVideo || (s.d === "rtl" ? "إرفاق" : "Attach")}
+              </button>
+              <button
+                onClick={() => setShowVideoInput(false)}
+                style={{
+                  ...btn0,
+                  background: "transparent",
+                  border: `1px solid ${CL.border}`,
+                  borderRadius: RADIUS.sm,
+                  padding: "4px 8px",
+                  color: CL.textSub,
+                  fontSize: FONT.caption,
+                  minHeight: isMobile ? 28 : "auto",
+                }}
+              >
+                {s.cancelVideo || (s.d === "rtl" ? "إلغاء" : "Cancel")}
+              </button>
             </div>
           )
         ) : (

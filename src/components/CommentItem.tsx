@@ -177,7 +177,6 @@ export default function CommentItem({
                     maxLength={300}
                     autoFocus
                     rows={2}
-                    dir="auto"
                     style={{
                       ...inputBase,
                       width: "100%",
@@ -338,7 +337,6 @@ export default function CommentItem({
                   placeholder={s.replyPh}
                   maxLength={300}
                   rows={1}
-                  dir="auto"
                   style={{
                     ...inputBase,
                     flex: 1,

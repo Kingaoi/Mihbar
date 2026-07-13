@@ -126,7 +126,6 @@ export default function ProfilePage({
                 placeholder={s.displayName || "Display Name"}
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                dir="auto"
                 style={{
                   width: "100%",
                   background: "transparent",

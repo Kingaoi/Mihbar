@@ -80,16 +80,6 @@ export function VideoPlayer({ url, CL, BORDERS, isViewActive = true }) {
   // Early return if URL is missing
   if (!url) return null;
 
-  // فحص بروتوكول دفاعي عند نقطة الاستخدام (وليس فقط عند نقطة الإدخال في
-  // MdAttachRow.tsx's handleAttachVideo) — نفس مبدأ الفحص المُطبَّق في
-  // renderMarkdown و LinkPreview.tsx. videoUrl بيانات مُخزَّنة قد تصل لهذا
-  // المكوّن عبر مسارات غير ذلك النموذج المُتحقَّق منه (تعديل localStorage
-  // مباشرة، أو أي مكوّن مستقبلي يضبط videoUrl بدون المرور بذلك النموذج).
-  // بدون هذا، رابط javascript: يصل لمسار <a href={url}> الاحتياطي أدناه
-  // سيُنفَّذ فعليًا عند الضغط عليه (بخلاف <video src>، وسم <a> يُنفِّذ
-  // روابط javascript: عند النقر).
-  if (!/^https?:\/\//i.test(url)) return null;
-
   const containerStyle: CSSProperties = {
     position: "relative",
     width: "100%",
