@@ -84,15 +84,13 @@ export default function Mihbar() {
 
   const shouldShowFloatingBtn = !activePostId && !settingsPageOpen && !profilePageOpen && !floatingPostOpen && !authPageOpen;
 
-  // Pull-to-refresh: مفعّل بسياقين — الفيد الرئيسي (يسحب قسم المنشورات) وصفحة
-  // المنشور المفتوح (يسحب قسم التعليقات تحديدًا). refreshPosts نفسها تكفي
-  // للحالتين لأن activePost مُشتقّة من posts (posts.find)، فإعادة جلب
-  // المنشورات يحدّث تعليقات المنشور المفتوح تلقائيًا. يبقى معطّلًا فقط داخل
-  // صفحات/نوافذ فرعية (إعدادات، بروفايل، نافذة نشر) ما إلها معنى تحديث فيها.
+  // Pull-to-refresh: مفعّل فقط في سياق الفيد الرئيسي (لا صفحة فرعية/نافذة
+  // مفتوحة)، بنفس شرط ظهور زر الـ FAB تقريبًا — لا معنى للسحب لتحديث الفيد
+  // وأنت داخل صفحة الإعدادات أو الملف الشخصي أو منشور مفتوح لوحده.
   const { pullY, pullProgress, maxPull } = usePullToRefresh({
     onRefresh: refreshPosts,
     isRefreshing,
-    disabled: settingsPageOpen || profilePageOpen || floatingPostOpen || authPageOpen,
+    disabled: !!activePostId || settingsPageOpen || profilePageOpen || floatingPostOpen || authPageOpen,
   });
 
   // Shared Styles retrieval
