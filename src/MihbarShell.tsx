@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import type { CSSProperties } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "motion/react";
@@ -89,11 +89,6 @@ export default function Mihbar() {
   // للحالتين لأن activePost مُشتقّة من posts (posts.find)، فإعادة جلب
   // المنشورات يحدّث تعليقات المنشور المفتوح تلقائيًا. يبقى معطّلًا فقط داخل
   // صفحات/نوافذ فرعية (إعدادات، بروفايل، نافذة نشر) ما إلها معنى تحديث فيها.
-  // مرساة بداية القسم القابل للسحب حاليًا: بداية قائمة المنشورات بالفيد
-  // الرئيسي، أو بداية قائمة التعليقات بصفحة المنشور — نفس ref واحد يُعاد
-  // ربطه تلقائيًا مع أي قسم يُعرض فعليًا (الاثنان لا يظهران بنفس الوقت).
-  const pullAnchorRef = useRef(null);
-
   const { pullY, pullProgress, maxPull } = usePullToRefresh({
     onRefresh: refreshPosts,
     isRefreshing,
@@ -211,7 +206,7 @@ export default function Mihbar() {
         myComments={myComments} myTotalReactions={myTotalReactions} catFilter={catFilter} setCatFilter={setCatFilter}
         searchQuery={searchQuery} setSearchQuery={setSearchQuery} closeThread={closeThread} activePostId={activePostId}
         CL={CL} s={s} btn0={btn0} cardStyle={cardStyle} R={R} setSettingsOpen={setSettingsOpen} BORDERS={BORDERS}
-        isBanned={isBanned} banTimeLeft={banTimeLeft}
+        isBanned={isBanned} banTimeLeft={banTimeLeft} pullY={pullY}
       >
         {activePostId ? (
           <ThreadView
@@ -230,7 +225,7 @@ export default function Mihbar() {
             toggleReplies={toggleReplies} savedPosts={savedPosts} toggleSavePost={toggleSavePost} startReply={startReply} openMenuFor={openMenuFor} setOpenMenuFor={setOpenMenuFor}
             copyItemText={copyItemText} shareItemText={shareItemText} updateVotes={updateVotes} handlePollVote={handlePollVote} openMdEditor={openMdEditor}
             isBanned={isBanned} err={err} setErr={setErr} CL={CL} BORDERS={BORDERS} isMobile={isMobile} s={s} btn0={btn0}
-            btnPrimary={btnPrimary} btnSecondary={btnSecondary} inputBase={inputBase} R={R} pullY={pullY} pullAnchorRef={pullAnchorRef}
+            btnPrimary={btnPrimary} btnSecondary={btnSecondary} inputBase={inputBase} R={R}
           />
         ) : (
           <>
@@ -299,44 +294,38 @@ export default function Mihbar() {
               </div>
             )}
 
-            {/* Feed items — قسم المنشورات: هو الجزء اللي ينسحب فعليًا لتحت مع
-                pullY أثناء pull-to-refresh بالفيد الرئيسي (التابات/فلاتر
-                الفئات فوقه تفضل ثابتة). المرساة أسفله ثابتة (خارج التحويل)
-                عشان تعكس موضع بداية القسم الحقيقي بدون تأثر بحركة السحب. */}
-            <div ref={pullAnchorRef} style={{ height: 0 }} aria-hidden />
-            <motion.div style={{ y: pullY }}>
-              {loading ? (
-                <div style={{ textAlign: "center", padding: 64, color: CL.textMuted }}>
-                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
-                    <Loader size={52} accent={CL.accent} ringColor={CL.textSub} />
-                  </div>
-                  <div style={{ fontSize: FONT.body }}>{s.loadTxt}</div>
+            {/* Feed items */}
+            {loading ? (
+              <div style={{ textAlign: "center", padding: 64, color: CL.textMuted }}>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+                  <Loader size={52} accent={CL.accent} ringColor={CL.textSub} />
                 </div>
-              ) : displayed.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "48px 20px", color: CL.textMuted }}>
-                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-                    <IconSprout size={38} color={CL.textMuted} />
-                  </div>
-                  <div style={{ fontSize: FONT.heading, marginBottom: 5 }}>{s.emH}</div>
-                  <div style={{ fontSize: FONT.body }}>{s.emP}</div>
+                <div style={{ fontSize: FONT.body }}>{s.loadTxt}</div>
+              </div>
+            ) : displayed.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "48px 20px", color: CL.textMuted }}>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <IconSprout size={38} color={CL.textMuted} />
                 </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  {displayed.map((p, idx) => (
-                    <FeedItem
-                      key={p.id} type="feed" p={p} onClick={openThread} s={s} CL={CL} R={R} BORDERS={BORDERS} isMobile={isMobile}
-                      btn0={btn0} isOwner={!!ownedPosts[p.id]} openMenuFor={openMenuFor} setOpenMenuFor={setOpenMenuFor}
-                      onDelete={deletePost} copyItemText={copyItemText} shareItemText={shareItemText} deviceHash={deviceHash}
-                      updateVotes={updateVotes} handlePollVote={handlePollVote} editingPostId={editingPostId} setEditingPostId={setEditingPostId} editPostText={editPostText}
-                      setEditPostText={setEditPostText} saveEditPost={saveEditPost} cancelEdit={cancelEdit} err={err}
-                      threadPending={threadPending} isLast={idx === displayed.length - 1} cardStyle={cardStyle}
-                      btnPrimary={btnPrimary} btnSecondary={btnSecondary} inputBase={inputBase}
-                      activePostId={activePostId} savedPosts={savedPosts} toggleSavePost={toggleSavePost}
-                    />
-                  ))}
-                </div>
-              )}
-            </motion.div>
+                <div style={{ fontSize: FONT.heading, marginBottom: 5 }}>{s.emH}</div>
+                <div style={{ fontSize: FONT.body }}>{s.emP}</div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {displayed.map((p, idx) => (
+                  <FeedItem
+                    key={p.id} type="feed" p={p} onClick={openThread} s={s} CL={CL} R={R} BORDERS={BORDERS} isMobile={isMobile}
+                    btn0={btn0} isOwner={!!ownedPosts[p.id]} openMenuFor={openMenuFor} setOpenMenuFor={setOpenMenuFor}
+                    onDelete={deletePost} copyItemText={copyItemText} shareItemText={shareItemText} deviceHash={deviceHash}
+                    updateVotes={updateVotes} handlePollVote={handlePollVote} editingPostId={editingPostId} setEditingPostId={setEditingPostId} editPostText={editPostText}
+                    setEditPostText={setEditPostText} saveEditPost={saveEditPost} cancelEdit={cancelEdit} err={err}
+                    threadPending={threadPending} isLast={idx === displayed.length - 1} cardStyle={cardStyle}
+                    btnPrimary={btnPrimary} btnSecondary={btnSecondary} inputBase={inputBase}
+                    activePostId={activePostId} savedPosts={savedPosts} toggleSavePost={toggleSavePost}
+                  />
+                ))}
+              </div>
+            )}
           </>
         )}
       </MainLayout>
