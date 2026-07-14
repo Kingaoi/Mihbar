@@ -26,7 +26,6 @@ export function MainLayout({
   BORDERS,
   isBanned,
   banTimeLeft,
-  pullY,
   children,
 }) {
   const [searchBarVisible, setSearchBarVisible] = useState(!!searchQuery);
@@ -447,15 +446,15 @@ export function MainLayout({
           </div>
         )}
 
-        {/* ملاحظة: التغليف بـ motion.div هنا (وليس على مستوى الصفحة كلها) مقصود —
-            تطبيق transform على أي عنصر أب يجعله containing block لعناصره
-            الـ position:fixed، وده كان راح يكسر الـ overlay الثابت الخاص
-            بقائمة الإشعارات فوق. تقييد الحركة على {children} بس يخلي
-            المحتوى (الفيد/الـ thread) ينسحب لتحت مع pullY بينما الهيدر
-            والإشعارات يفضلوا زي ما هم تمامًا. */}
-        <motion.div style={{ y: pullY }}>
-          {children}
-        </motion.div>
+        {/* ملاحظة: pull-to-refresh (السحب-للتحديث) حُذف بالكامل من التطبيق
+            (usePullToRefresh.ts وPullToRefreshIndicator.tsx حُذفا، وكل
+            استدعاء لهما). كان يسبب مشكلة سكرول متكررة يصعب حصرها (تعارض
+            transform/touch-action مع native scroll على الأجهزة الحقيقية)،
+            وتبيّن أيضًا أن تفعيله من قمة الصفحة فقط لا يتوافق مع سياق
+            صفحة منشور مفتوح. تحديث الفيد الآن يحدث فقط تلقائيًا بعد نشر
+            منشور جديد (refreshPosts في usePostsData.ts ما زال موجودًا
+            لهذا الغرض تحديدًا، ولا علاقة له بالسحب باللمس). */}
+        {children}
       </main>
     </div>
   );

@@ -15,7 +15,6 @@ import { useMihbarPosts } from "./hooks/useMihbarPosts";
 import { useSavedPosts } from "./hooks/useSavedPosts";
 import { useAppUIState } from "./hooks/useAppUIState";
 import { useDocumentMetadata } from "./hooks/useDocumentMetadata";
-import { usePullToRefresh } from "./hooks/usePullToRefresh";
 
 // Styles
 import { getSharedStyles } from "./styles/sharedStyles";
@@ -36,7 +35,6 @@ import Toast from "./components/Toast";
 import MainLayout from "./components/layout/MainLayout";
 import { FloatingPostButton } from "./components/FloatingPostButton";
 import { FloatingPostModal } from "./components/FloatingPostModal";
-import { PullToRefreshIndicator } from "./components/PullToRefreshIndicator";
 import AuthGatewayPage from "./components/AuthGatewayPage";
 import UsernameAuthPage from "./components/UsernameAuthPage";
 
@@ -83,15 +81,6 @@ export default function Mihbar() {
   } = postsManager;
 
   const shouldShowFloatingBtn = !activePostId && !settingsPageOpen && !profilePageOpen && !floatingPostOpen && !authPageOpen;
-
-  // Pull-to-refresh: مفعّل فقط في سياق الفيد الرئيسي (لا صفحة فرعية/نافذة
-  // مفتوحة)، بنفس شرط ظهور زر الـ FAB تقريبًا — لا معنى للسحب لتحديث الفيد
-  // وأنت داخل صفحة الإعدادات أو الملف الشخصي أو منشور مفتوح لوحده.
-  const { pullY, pullProgress, maxPull } = usePullToRefresh({
-    onRefresh: refreshPosts,
-    isRefreshing,
-    disabled: !!activePostId || settingsPageOpen || profilePageOpen || floatingPostOpen || authPageOpen,
-  });
 
   // Shared Styles retrieval
   // Shared Styles retrieval — memoized: الدالة نقية وتُرجع أوبجكت جديد كل
@@ -195,16 +184,12 @@ export default function Mihbar() {
         inputBase={inputBase} btnPrimary={btnPrimary}
       />
 
-      <PullToRefreshIndicator
-        pullY={pullY} pullProgress={pullProgress} maxPull={maxPull} CL={CL}
-      />
-
       <MainLayout
         isDesktop={isDesktop} setProfilePageOpen={setProfilePageOpen} myPosts={myPosts}
         myComments={myComments} myTotalReactions={myTotalReactions} catFilter={catFilter} setCatFilter={setCatFilter}
         searchQuery={searchQuery} setSearchQuery={setSearchQuery} closeThread={closeThread} activePostId={activePostId}
         CL={CL} s={s} btn0={btn0} cardStyle={cardStyle} R={R} setSettingsOpen={setSettingsOpen} BORDERS={BORDERS}
-        isBanned={isBanned} banTimeLeft={banTimeLeft} pullY={pullY}
+        isBanned={isBanned} banTimeLeft={banTimeLeft}
       >
         {activePostId ? (
           <ThreadView
