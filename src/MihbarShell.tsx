@@ -15,6 +15,7 @@ import { useMihbarPosts } from "./hooks/useMihbarPosts";
 import { useSavedPosts } from "./hooks/useSavedPosts";
 import { useAppUIState } from "./hooks/useAppUIState";
 import { useDocumentMetadata } from "./hooks/useDocumentMetadata";
+import { usePullToRefresh } from "./hooks/usePullToRefresh";
 
 // Styles
 import { getSharedStyles } from "./styles/sharedStyles";
@@ -35,6 +36,7 @@ import Toast from "./components/Toast";
 import MainLayout from "./components/layout/MainLayout";
 import { FloatingPostButton } from "./components/FloatingPostButton";
 import { FloatingPostModal } from "./components/FloatingPostModal";
+import { PullToRefreshIndicator } from "./components/PullToRefreshIndicator";
 import AuthGatewayPage from "./components/AuthGatewayPage";
 import UsernameAuthPage from "./components/UsernameAuthPage";
 
@@ -81,6 +83,15 @@ export default function Mihbar() {
   } = postsManager;
 
   const shouldShowFloatingBtn = !activePostId && !settingsPageOpen && !profilePageOpen && !floatingPostOpen && !authPageOpen;
+
+  // Pull-to-refresh: مؤشر مستقل فقط (لا يحرّك المحتوى إطلاقًا)، مفعّل فقط
+  // في سياق الفيد الرئيسي — لا معنى للسحب لتحديث الفيد وأنت داخل صفحة
+  // الإعدادات أو الملف الشخصي أو منشور مفتوح لوحده.
+  const { pullY, pullProgress, maxPull } = usePullToRefresh({
+    onRefresh: refreshPosts,
+    isRefreshing,
+    disabled: !!activePostId || settingsPageOpen || profilePageOpen || floatingPostOpen || authPageOpen,
+  });
 
   // Shared Styles retrieval
   // Shared Styles retrieval — memoized: الدالة نقية وتُرجع أوبجكت جديد كل
@@ -182,6 +193,10 @@ export default function Mihbar() {
         authPageOpen={authPageOpen} authView={authView} setAuthView={setAuthView}
         CL={CL} BORDERS={BORDERS} isMobile={isMobile} isDesktop={isDesktop} s={s} btn0={btn0} cardStyle={cardStyle}
         inputBase={inputBase} btnPrimary={btnPrimary}
+      />
+
+      <PullToRefreshIndicator
+        pullY={pullY} pullProgress={pullProgress} maxPull={maxPull} CL={CL}
       />
 
       <MainLayout
