@@ -14,25 +14,12 @@ import { useMotionValue, animate, type MotionValue } from "motion/react";
 //
 // كل المستمعات هنا passive:true فقط للقراءة — لا نستدعي preventDefault
 // إطلاقًا في أي مكان، فالمتصفح يبقى المتحكم الكامل بالسكرول دائمًا.
-//
-// إلغاء القفل (unlock): كانت النسخة السابقة تعتمد على useEffect يراقب
-// تغيّر isRefreshing (من true إلى false) لإرجاع المؤشر للصفر. هذا غير
-// موثوق فعليًا: لو onRefresh (refreshPosts) نفّذت بسرعة كافية (قراءة
-// محلية من localStorage، لا شبكة حقيقية)، فقد يُطبِّق React كلا تحديثي
-// setIsRefreshing(true)/setIsRefreshing(false) دفعة واحدة (batching) قبل
-// أي إعادة رندر وسيطة تحمل isRefreshing=true فعليًا للـ effect — فتبقى
-// القيمة كما هي من منظور الـ closure، ولا يُطلَق الـ effect إطلاقًا،
-// ويبقى المؤشر عالقًا عند LOCK_Y للأبد (البَگ المُبلَّغ: "الدائرة تقف
-// ولا تكمل"). الإصلاح: ننتظر onRefresh() نفسها مباشرة (كـ Promise) ونُلغي
-// القفل فور اكتمالها الفعلي، بغض النظر تمامًا عن توقيت تحديثات React
-// state أو قيمة isRefreshing المُمرَّرة كـ prop.
 
 const PULL_THRESHOLD = 70; // بكسل (مسافة سحب فعلية باللمس) المطلوبة لتفعيل التحديث
 const WHEEL_THRESHOLD = 40; // مجموع deltaY السالب المطلوب بالماوس/wheel
 const MAX_VISUAL_PULL = 64; // أقصى مسافة مرئية يتحرك فيها المؤشر (سقف الـ rubber-band)
 const EASE_K = PULL_THRESHOLD / 1.9;
 const LOCK_Y = 52; // الموضع اللي يثبت فيه المؤشر أثناء التحديث الفعلي
-const MIN_VISIBLE_MS = 400; // أقل مدة يبقى فيها المؤشر ظاهرًا، حتى لو onRefresh أسرع من هذا (إحساس بصري بأن شيئًا حدث فعلاً)
 const SPRING = { type: "spring" as const, stiffness: 380, damping: 32, mass: 0.7 };
 
 // أدق من window.scrollY في بعض حالات iOS Safari (rubber-band overscroll
@@ -44,13 +31,10 @@ function isAtTop() {
 
 export function usePullToRefresh({
   onRefresh,
-  // isRefreshing: لم تعد تُستخدم في منطق القفل نفسه (انظر ملاحظة runRefresh
-  // أعلاه) — أُبقيت في التوقيع فقط توافقًا مع نقطة الاستدعاء الحالية في
-  // MihbarShell.tsx، بدون أي أثر فعلي على السلوك الداخلي هنا.
-  isRefreshing: _isRefreshing,
+  isRefreshing,
   disabled = false,
 }: {
-  onRefresh: () => void | Promise<unknown>;
+  onRefresh: () => void;
   isRefreshing: boolean;
   disabled?: boolean;
 }) {
@@ -61,30 +45,14 @@ export function usePullToRefresh({
   const armedRef = useRef(false);
   const lockedRef = useRef(false);
   const wheelCooldownRef = useRef(false);
-  const onRefreshRef = useRef(onRefresh);
-  onRefreshRef.current = onRefresh;
 
-  // ينفّذ onRefresh فعليًا ويُلغي القفل بمجرد اكتمالها (نجاحًا أو فشلًا) —
-  // لا علاقة لهذا بقيمة isRefreshing القادمة من الخارج إطلاقًا، فهو يعتمد
-  // فقط على الـ Promise الفعلي الذي ترجعه onRefresh (أو استدعاء متزامن
-  // عادي لو لم ترجع Promise).
-  const runRefresh = () => {
-    const startedAt = Date.now();
-    Promise.resolve()
-      .then(() => onRefreshRef.current())
-      .catch((e) => {
-        console.error("[Mihbar] pull-to-refresh: onRefresh رمت خطأ:", e);
-      })
-      .finally(() => {
-        const elapsed = Date.now() - startedAt;
-        const remaining = Math.max(0, MIN_VISIBLE_MS - elapsed);
-        setTimeout(() => {
-          lockedRef.current = false;
-          animate(pullY, 0, SPRING);
-          animate(pullProgress, 0, SPRING);
-        }, remaining);
-      });
-  };
+  useEffect(() => {
+    if (!isRefreshing && lockedRef.current) {
+      lockedRef.current = false;
+      animate(pullY, 0, SPRING);
+      animate(pullProgress, 0, SPRING);
+    }
+  }, [isRefreshing, pullY, pullProgress]);
 
   useEffect(() => {
     if (disabled) {
@@ -102,7 +70,7 @@ export function usePullToRefresh({
     // حتى هذا القدر من المراقبة يسبب أي التباس، أبسط حل هو حذف هذا الملف
     // بالكامل (كما حدث سابقًا) بدل محاولة تصحيحه أكثر.
     const handleTouchStart = (e: TouchEvent) => {
-      if (!isAtTop() || lockedRef.current) {
+      if (!isAtTop() || isRefreshing) {
         touchStartY.current = null;
         return;
       }
@@ -140,11 +108,11 @@ export function usePullToRefresh({
 
       if (lockedRef.current) return;
 
-      if (armedRef.current) {
+      if (armedRef.current && !isRefreshing) {
         lockedRef.current = true;
         animate(pullY, LOCK_Y, SPRING);
         animate(pullProgress, 1, SPRING);
-        runRefresh();
+        onRefresh();
       } else {
         animate(pullY, 0, SPRING);
         animate(pullProgress, 0, SPRING);
@@ -161,7 +129,7 @@ export function usePullToRefresh({
         wheelAccum = 0;
         return;
       }
-      if (wheelCooldownRef.current || lockedRef.current) return;
+      if (isRefreshing || wheelCooldownRef.current || lockedRef.current) return;
 
       wheelAccum += -e.deltaY;
       if (wheelAccum > WHEEL_THRESHOLD) {
@@ -170,9 +138,7 @@ export function usePullToRefresh({
         lockedRef.current = true;
         animate(pullY, LOCK_Y, SPRING);
         animate(pullProgress, 1, SPRING);
-        runRefresh();
-        // فترة تهدئة قصيرة بعد كل تفعيل عبر wheel لتفادي إطلاق تحديثات
-        // متتالية من نفس حركة العجلة المستمرة.
+        onRefresh();
         setTimeout(() => {
           wheelCooldownRef.current = false;
         }, 800);
@@ -190,7 +156,7 @@ export function usePullToRefresh({
       window.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("wheel", handleWheel);
     };
-  }, [disabled, pullY, pullProgress]);
+  }, [onRefresh, isRefreshing, disabled, pullY, pullProgress]);
 
   return { pullY, pullProgress, maxPull: MAX_VISUAL_PULL, lockY: LOCK_Y } as {
     pullY: MotionValue<number>;
